@@ -1,0 +1,21 @@
+{
+  "name": "sift",
+  "version": "0.1.0",
+  "description": "从视频、文档和长文本中提取关键信息的多源内容提炼工具",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch server.js",
+    "start": "node server.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "busboy": "^1.6.0",
+    "mammoth": "^1.12.2",
+    "pdf-parse": "1.1.1",
+    "word-extractor": "^1.0.4"
+  }
+}

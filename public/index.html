@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="读取 YouTube 视频、PDF、Word 和长文本，生成带来源定位的结构化中文摘要。" />
+  <meta name="theme-color" content="#080b10" />
+  <title>Sift · 多源内容提炼器</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="app-frame">
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="Sift 首页">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="brand-copy"><strong>Sift</strong><small>MULTI-SOURCE DIGEST</small></span>
+      </a>
+      <div class="system-status" id="system-status">
+        <span class="status-light" aria-hidden="true"></span>
+        <span id="system-label">正在连接服务</span>
+        <span class="version-tag">v0.1</span>
+      </div>
+    </header>
+
+    <main class="app-shell">
+      <section class="control-column" aria-labelledby="page-title">
+        <div class="intro">
+          <div class="section-code"><span>01</span> INPUT CONSOLE</div>
+          <h1 id="page-title">从长内容中，<br><em>提取真正的信号。</em></h1>
+          <p>统一读取 YouTube、PDF、Word 与长文本，输出可追溯的结构化中文摘要。</p>
+        </div>
+
+        <section class="input-console">
+          <div class="mode-switch" role="tablist" aria-label="摘要输入方式">
+            <button class="mode-button active" id="youtube-tab" type="button" role="tab" aria-selected="true" aria-controls="youtube-form" data-tab="youtube">
+              <span class="mode-index">A</span>YouTube 视频
+            </button>
+            <button class="mode-button" id="file-tab" type="button" role="tab" aria-selected="false" aria-controls="file-form" data-tab="file">
+              <span class="mode-index">B</span>上传文件
+            </button>
+            <button class="mode-button" id="text-tab" type="button" role="tab" aria-selected="false" aria-controls="text-form" data-tab="text">
+              <span class="mode-index">C</span>粘贴文本
+            </button>
+          </div>
+
+          <form id="youtube-form" class="input-panel active" role="tabpanel" aria-labelledby="youtube-tab">
+            <div class="field-heading">
+              <label for="youtube-url">公开视频链接</label>
+              <span>PUBLIC CAPTIONS</span>
+            </div>
+            <div class="url-field">
+              <span class="field-prefix" aria-hidden="true">YT</span>
+              <input id="youtube-url" type="url" inputmode="url" autocomplete="url" placeholder="youtube.com/watch?v=..." required />
+            </div>
+            <p class="field-message">支持普通视频、Shorts 和直播回放，视频需要提供公开字幕。</p>
+            <button class="primary-action" type="submit">
+              <span class="button-label">启动内容分析</span>
+              <span class="action-arrow" aria-hidden="true">↗</span>
+            </button>
+          </form>
+
+          <form id="file-form" class="input-panel" role="tabpanel" aria-labelledby="file-tab" hidden>
+            <div class="field-heading">
+              <label for="content-file">本地内容文件</label>
+              <span>MAX 20MB</span>
+            </div>
+            <label class="file-drop" id="file-drop" for="content-file">
+              <input id="content-file" type="file" accept=".pdf,.doc,.docx,.txt,.md" />
+              <span class="file-symbol" aria-hidden="true">DOC</span>
+              <strong>选择文件或拖放到这里</strong>
+              <span>PDF / DOC / DOCX / TXT / MD</span>
+            </label>
+            <div class="file-selection" id="file-selection" hidden>
+              <div><strong id="file-name"></strong><span id="file-size"></span></div>
+              <button id="clear-file" class="text-action" type="button">移除</button>
+            </div>
+            <p class="field-message">文件仅在内存中解析，摘要生成后不会保存在服务器。</p>
+            <button class="primary-action" type="submit" disabled>
+              <span class="button-label">启动文件分析</span>
+              <span class="action-arrow" aria-hidden="true">↗</span>
+            </button>
+          </form>
+
+          <form id="text-form" class="input-panel" role="tabpanel" aria-labelledby="text-tab" hidden>
+            <div class="field-heading">
+              <label for="content-title">内容标题</label>
+              <span>OPTIONAL</span>
+            </div>
+            <input id="content-title" class="title-field" type="text" maxlength="120" placeholder="为这次摘要命名" />
+            <div class="field-heading text-heading">
+              <label for="content-text">内容原文</label>
+              <button id="sample-button" class="text-action" type="button">填入示例</button>
+            </div>
+            <textarea id="content-text" maxlength="150000" placeholder="粘贴文章、Newsletter、访谈或邮件正文……" required></textarea>
+            <div class="text-meta">
+              <span>至少 80 字符</span>
+              <span id="character-count">0 / 150,000</span>
+            </div>
+            <button class="primary-action" type="submit">
+              <span class="button-label">启动内容分析</span>
+              <span class="action-arrow" aria-hidden="true">↗</span>
+            </button>
+          </form>
+        </section>
+
+        <div class="process-strip" aria-label="处理流程">
+          <div><span>01</span><strong>读取来源</strong></div>
+          <i aria-hidden="true"></i>
+          <div><span>02</span><strong>清理内容</strong></div>
+          <i aria-hidden="true"></i>
+          <div><span>03</span><strong>提取信号</strong></div>
+        </div>
+        <p class="privacy-note"><span aria-hidden="true">◆</span> 内容仅在内存中处理，不写入数据库或日志。</p>
+      </section>
+
+      <section class="result-column" aria-labelledby="result-heading">
+        <div class="result-toolbar">
+          <div>
+            <div class="section-code"><span>02</span> DIGEST OUTPUT</div>
+            <h2 id="result-heading">分析结果</h2>
+          </div>
+          <div class="result-actions" id="result-actions" hidden>
+            <button id="copy-button" type="button">复制</button>
+            <button id="download-button" type="button">导出 .md</button>
+          </div>
+        </div>
+
+        <div id="status" class="feedback" hidden role="status" aria-live="polite"></div>
+
+        <div id="empty-state" class="empty-state">
+          <div class="signal-visual" aria-hidden="true">
+            <span style="--level: 28%"></span><span style="--level: 52%"></span><span style="--level: 76%"></span>
+            <span style="--level: 44%"></span><span style="--level: 88%"></span><span style="--level: 62%"></span>
+            <span style="--level: 34%"></span><span style="--level: 70%"></span><span style="--level: 48%"></span>
+          </div>
+          <p class="empty-code">AWAITING_SOURCE</p>
+          <h3>摘要区域已就绪</h3>
+          <p>提交视频、文档或文本后，这里会生成一句话结论、核心内容、关键数据、相关实体、观点、风险和原文定位。</p>
+          <div class="output-map">
+            <span>结论</span><span>要点</span><span>实体</span><span>数据</span><span>观点</span><span>风险</span><span>定位</span>
+          </div>
+        </div>
+
+        <div id="digest" class="digest" hidden>
+          <header class="digest-header">
+            <div class="source-badge" id="source-badge">TEXT</div>
+            <div>
+              <h3 id="digest-title">内容摘要</h3>
+              <p id="digest-meta"></p>
+            </div>
+          </header>
+          <div id="digest-content"></div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span>SIFT / OPEN SOURCE</span>
+      <span>摘要可能存在遗漏，重要信息请返回原始内容核对。</span>
+    </footer>
+  </div>
+  <script src="/app.js" type="module"></script>
+</body>
+</html>
