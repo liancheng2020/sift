@@ -42,6 +42,17 @@ test("resolveProviderConfig supports explicit OpenAI selection", () => {
   assert.equal(config.model, "gpt-test");
 });
 
+test("resolveProviderConfig expands provider base URLs", () => {
+  assert.equal(
+    resolveProviderConfig({ DEEPSEEK_API_KEY: "test-key", DEEPSEEK_BASE_URL: "https://api.deepseek.com/" }).endpoint,
+    "https://api.deepseek.com/chat/completions"
+  );
+  assert.equal(
+    resolveProviderConfig({ AI_PROVIDER: "openai", OPENAI_API_KEY: "test-key", OPENAI_BASE_URL: "https://api.openai.com/v1" }).endpoint,
+    "https://api.openai.com/v1/responses"
+  );
+});
+
 test("resolveProviderConfig rejects unknown providers", () => {
   assert.throws(() => resolveProviderConfig({ AI_PROVIDER: "unknown" }), /仅支持/);
 });

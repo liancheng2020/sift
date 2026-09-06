@@ -6,7 +6,7 @@
 
 ## v0.1 能力
 
-- 支持 YouTube 普通视频、Shorts 和直播回放链接，读取公开视频字幕并保留时间戳。
+- 支持 YouTube 普通视频、Shorts 和直播回放链接，优先读取公开字幕；无公开字幕时使用 DeepSeek Vision 识别画面中的硬字幕。
 - 支持最大 20MB 的 PDF、DOC、DOCX、TXT、Markdown 文件。
 - 支持粘贴最多 15 万字符的文章、Newsletter、访谈或邮件正文。
 - 自动分段处理长内容，并对分段结果合并去重。
@@ -32,14 +32,13 @@ npm install
 cp .env.example .env
 ```
 
-编辑 `.env`，填入自己的 DeepSeek API Key，然后加载配置并启动：
+编辑 `.env`，填入自己的 DeepSeek API Key，然后启动：
 
 ```bash
-set -a
-source .env
-set +a
 npm start
 ```
+
+服务启动时会自动加载项目根目录下的 `.env`。
 
 打开 <http://localhost:3000>。
 
@@ -57,6 +56,11 @@ npm test
 AI_PROVIDER=deepseek
 DEEPSEEK_API_KEY=your_deepseek_api_key
 DEEPSEEK_MODEL=deepseek-chat
+DEEPSEEK_BASE_URL=https://api.deepseek.com
+DEEPSEEK_VISION_MODEL=deepseek-v4-flash-vision-exp
+
+# 中国大陆网络通常需要给服务端单独配置 YouTube 代理
+YOUTUBE_PROXY_URL=http://127.0.0.1:1087
 ```
 
 切换到 OpenAI：
@@ -69,6 +73,16 @@ OPENAI_MODEL=gpt-5-mini
 
 API Key 只允许写入本地 `.env`，不要提交到 Git 仓库。
 
+### YouTube 网络配置
+
+Chrome 能访问 YouTube，不代表 Node 服务也能访问：浏览器代理扩展只作用于浏览器。Sift 会优先读取 `YOUTUBE_PROXY_URL`，也兼容 `HTTPS_PROXY` 和 `HTTP_PROXY`。例如本地 HTTP 代理端口为 `1087`：
+
+```dotenv
+YOUTUBE_PROXY_URL=http://127.0.0.1:1087
+```
+
+修改 `.env` 后需要停止并重新运行 `npm start`。Sift 使用 `yt-dlp` 适配 YouTube 页面变化；首次 `npm install` 会下载对应平台的可执行文件。
+
 ## API
 
 | 方法 | 路径 | 输入 |
@@ -80,7 +94,7 @@ API Key 只允许写入本地 `.env`，不要提交到 Git 仓库。
 
 ## v0.1 边界
 
-- YouTube 依赖视频已有的公开字幕，暂不包含音频转写。
+- YouTube 无公开字幕时会尝试识别故事板中的硬字幕；没有画面字幕的纯语音视频仍需要后续接入音频转写服务。
 - 每次处理一个来源，不保存历史记录，也不合并多个来源。
 - `.doc` 使用兼容解析器；复杂排版、扫描版 PDF 和图片中的文字可能无法提取。
 - 内容会发送至配置的模型服务，请勿提交无权处理的敏感内容。

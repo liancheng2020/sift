@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";
 import { extname, join } from "node:path";
@@ -101,7 +102,12 @@ createServer(async (request, response) => {
       const transcript = await fetchYoutubeTranscript(videoId);
       if (!transcript.segments.length) return json(response, 422, { error: "该视频没有可用字幕" });
       const text = transcriptToTimedText(transcript.segments);
-      const summary = await summarizeContent({ text, title: transcript.title || `YouTube ${videoId}`, sourceType: "YouTube 字幕" });
+      const visualTranscript = transcript.extractionMethod === "storyboard_ocr";
+      const summary = await summarizeContent({
+        text,
+        title: transcript.title || `YouTube ${videoId}`,
+        sourceType: visualTranscript ? "YouTube 画面字幕" : "YouTube 字幕"
+      });
       return json(response, 200, {
         summary,
         meta: {
@@ -110,6 +116,7 @@ createServer(async (request, response) => {
           language: transcript.language,
           sourceType: "youtube",
           videoId,
+          extractionMethod: transcript.extractionMethod,
           characters: text.length
         }
       });

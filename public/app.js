@@ -184,7 +184,8 @@ function renderDigest(data) {
   const { summary, meta = {} } = data;
   $("#source-badge").textContent = meta.sourceType === "youtube" ? "YOUTUBE" : meta.sourceType === "file" ? meta.fileType || "FILE" : "TEXT";
   $("#digest-title").textContent = meta.title || "内容摘要";
-  const metaParts = [meta.author, meta.fileType, meta.language?.toUpperCase(), `${Number(meta.characters || 0).toLocaleString()} 字符`].filter(Boolean);
+  const extractionLabel = meta.extractionMethod === "storyboard_ocr" ? "画面字幕识别" : null;
+  const metaParts = [meta.author, meta.fileType, meta.language?.toUpperCase(), extractionLabel, `${Number(meta.characters || 0).toLocaleString()} 字符`].filter(Boolean);
   $("#digest-meta").textContent = metaParts.join(" / ");
   elements.digestContent.replaceChildren();
 
