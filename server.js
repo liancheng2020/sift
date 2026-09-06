@@ -196,6 +196,14 @@ createServer(async (request, response) => {
       return json(response, 200, await summarizeYoutube(videoId, transcript));
     }
 
+    if (request.method === "POST" && pathname === "/api/debug/parse-file") {
+      const upload = await uploadedFile(request);
+      console.info(`[debug] 上传完成: ${upload.buffer.length} bytes`);
+      const parsed = await parseUploadedFile(upload);
+      console.info(`[debug] 解析完成: ${parsed.text.length} 字符`);
+      return json(response, 200, { ok: true, fileType: parsed.fileType, characters: parsed.text.length });
+    }
+
     if (request.method === "POST" && pathname === "/api/summarize/file") {
       const upload = await uploadedFile(request);
       console.info(`[file] 上传完成: ${upload.buffer.length} bytes`);
