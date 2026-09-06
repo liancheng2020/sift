@@ -81,7 +81,7 @@ OPENAI_MODEL=gpt-5-mini
 | `OPENAI_API_KEY` | 使用 OpenAI 时必填 | 无 | OpenAI 摘要凭证 |
 | `OPENAI_MODEL` | 否 | `gpt-5-mini` | OpenAI 摘要模型 |
 | `OPENAI_BASE_URL` | 否 | `https://api.openai.com/v1` | OpenAI API 基础地址，也支持填写完整的 `/responses` 地址 |
-| `YOUTUBE_PROXY_URL` | 视网络而定 | 无 | Node.js 访问 YouTube 使用的 HTTP 代理，优先级最高 |
+| `YOUTUBE_PROXY_URL` | 视网络而定 | 无 | Node.js 访问 YouTube 使用的公网 HTTP(S) 代理，优先级最高 |
 | `HTTPS_PROXY` / `HTTP_PROXY` | 否 | 无 | `YOUTUBE_PROXY_URL` 未配置时的代理回退 |
 | `PORT` | 否 | `3000` | Web 服务监听端口 |
 
@@ -91,13 +91,23 @@ API Key 只允许写入本地 `.env`，不要提交到 Git 仓库。
 
 ### YouTube 网络配置
 
-Chrome 能访问 YouTube，不代表 Node 服务也能访问：浏览器代理扩展只作用于浏览器。Sift 会优先读取 `YOUTUBE_PROXY_URL`，也兼容 `HTTPS_PROXY` 和 `HTTP_PROXY`。例如本地 HTTP 代理端口为 `1087`：
+Chrome 能访问 YouTube，不代表 Node 服务也能访问：浏览器代理扩展只作用于浏览器。Sift 会优先读取 `YOUTUBE_PROXY_URL`，也兼容 `HTTPS_PROXY` 和 `HTTP_PROXY`。
+
+本地开发可以使用本机代理，例如 HTTP 代理端口为 `1087`：
 
 ```dotenv
 YOUTUBE_PROXY_URL=http://127.0.0.1:1087
 ```
 
-修改 `.env` 后需要停止并重新运行 `npm start`。Sift 使用 `yt-dlp` 适配 YouTube 页面变化；首次 `npm install` 会下载对应平台的可执行文件。
+Vercel、Railway 等云端运行环境中的 `127.0.0.1` 和 `localhost` 只指向云端实例自身，无法连接你电脑上的代理。部署到 Vercel 时应删除本机代理变量并先尝试直连；若 YouTube 限制了 Vercel 出口网络，则配置公网可访问的 HTTP(S) 代理：
+
+```dotenv
+YOUTUBE_PROXY_URL=https://user:password@proxy.example.com:8443
+```
+
+Sift 检测到 Vercel 配置了 loopback 代理时会忽略它并尝试直连，`/api/health` 的 `youtube` 字段会显示代理是否启用及配置警告。公网代理失败时也会自动尝试一次直连。
+
+修改本地 `.env` 后需要停止并重新运行 `npm start`；修改 Vercel 环境变量后必须重新部署，新变量不会作用于既有部署。Sift 使用 `yt-dlp` 适配 YouTube 页面变化；首次 `npm install` 会下载对应平台的可执行文件。
 
 ## API
 

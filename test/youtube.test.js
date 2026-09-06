@@ -1,7 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
+  getYoutubeNetworkStatus,
   parseJson3Transcript,
+  resolveYoutubeNetworkConfig,
   resolveYoutubeProxy,
   selectCaptionTrack,
   selectStoryboardFormat,
@@ -14,6 +16,35 @@ test("resolveYoutubeProxy prefers the dedicated YouTube proxy", () => {
     HTTPS_PROXY: "http://127.0.0.1:9999"
   }), "http://127.0.0.1:1087");
   assert.equal(resolveYoutubeProxy({ HTTPS_PROXY: "http://127.0.0.1:1087" }), "http://127.0.0.1:1087");
+});
+
+test("Vercel ignores loopback proxies and reports a warning", () => {
+  const env = { VERCEL: "1", YOUTUBE_PROXY_URL: "http://127.0.0.1:1087" };
+  assert.deepEqual(resolveYoutubeNetworkConfig(env), {
+    proxyUrl: "",
+    proxyConfigured: true,
+    proxyIgnored: true,
+    runtime: "vercel"
+  });
+  assert.equal(getYoutubeNetworkStatus(env).proxyActive, false);
+  assert.match(getYoutubeNetworkStatus(env).warning, /Vercel 无法访问/);
+});
+
+test("Vercel accepts a publicly reachable HTTP proxy", () => {
+  const config = resolveYoutubeNetworkConfig({
+    VERCEL_ENV: "production",
+    YOUTUBE_PROXY_URL: "https://user:password@proxy.example.com:8443"
+  });
+  assert.equal(config.proxyUrl, "https://user:password@proxy.example.com:8443");
+  assert.equal(config.proxyIgnored, false);
+  assert.equal(config.runtime, "vercel");
+});
+
+test("rejects unsupported YouTube proxy protocols", () => {
+  assert.throws(
+    () => resolveYoutubeNetworkConfig({ YOUTUBE_PROXY_URL: "socks5://127.0.0.1:1080" }),
+    /仅支持 HTTP\(S\) 代理/
+  );
 });
 
 test("selectCaptionTrack prefers Chinese JSON3 subtitles", () => {

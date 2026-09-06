@@ -7,7 +7,7 @@ import Busboy from "busboy";
 import { extractVideoId, normalizeText, numberParagraphs, transcriptToTimedText } from "./lib/content.js";
 import { MAX_FILE_SIZE, parseUploadedFile } from "./lib/file.js";
 import { resolveProviderConfig, summarizeContent } from "./lib/summarize.js";
-import { fetchYoutubeTranscript } from "./lib/youtube.js";
+import { fetchYoutubeTranscript, getYoutubeNetworkStatus } from "./lib/youtube.js";
 
 const port = Number(process.env.PORT || 3000);
 const root = fileURLToPath(new URL(".", import.meta.url));
@@ -80,7 +80,8 @@ createServer(async (request, response) => {
         providers: {
           deepseek: Boolean(process.env.DEEPSEEK_API_KEY),
           openai: Boolean(process.env.OPENAI_API_KEY)
-        }
+        },
+        youtube: getYoutubeNetworkStatus()
       });
     }
 
@@ -148,7 +149,19 @@ createServer(async (request, response) => {
     response.end(file);
   } catch (error) {
     const badRequest = /有效|支持|太短|过长|超过|为空|上传|选择|配置|multipart/.test(error.message);
-    const status = error.code === "ENOENT" ? 404 : badRequest ? 400 : 500;
-    json(response, status, { error: status === 404 ? "页面不存在" : error.message || "处理失败" });
+    const youtubeFailure = error.youtubeCode?.startsWith("YOUTUBE_");
+    const status = error.code === "ENOENT"
+      ? 404
+      : error.youtubeCode === "YOUTUBE_NO_CAPTIONS"
+        ? 422
+        : badRequest
+          ? 400
+          : youtubeFailure
+            ? 502
+            : 500;
+    json(response, status, {
+      error: status === 404 ? "页面不存在" : error.message || "处理失败",
+      ...(error.youtubeCode ? { code: error.youtubeCode } : {})
+    });
   }
 }).listen(port, () => console.log(`Sift running at http://localhost:${port}`));
