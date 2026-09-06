@@ -241,12 +241,18 @@ function setFeedback(type, message) {
 async function parseApiResponse(response) {
   const text = await response.text();
   let data;
-  try { data = JSON.parse(text); } catch { throw new Error("服务返回了无法识别的响应"); }
+  try { data = JSON.parse(text); } catch { data = null; }
   if (!response.ok) {
-    const error = new Error(data.error || "请求失败");
-    error.code = data.code;
+    const error = new Error(
+      data?.error
+        || (response.status === 413
+          ? "文件超过平台上传限制，请选择更小的文件"
+          : `服务暂时不可用（HTTP ${response.status}），请稍后重试`)
+    );
+    error.code = data?.code;
     throw error;
   }
+  if (!data) throw new Error("服务返回了无法识别的响应");
   return data;
 }
 
