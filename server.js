@@ -154,10 +154,10 @@ createServer(async (request, response) => {
       ? 404
       : error.youtubeCode === "YOUTUBE_NO_CAPTIONS"
         ? 422
-        : badRequest
-          ? 400
-          : youtubeFailure
-            ? 502
+        : youtubeFailure
+          ? 502
+          : badRequest
+            ? 400
             : 500;
     json(response, status, {
       error: status === 404 ? "页面不存在" : error.message || "处理失败",

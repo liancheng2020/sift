@@ -1,8 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
+  extractYoutubePlayerResponse,
   getYoutubeNetworkStatus,
   parseJson3Transcript,
+  parsePlayerStoryboards,
+  playerResponseToMetadata,
   resolveYoutubeNetworkConfig,
   resolveYoutubeProxy,
   selectCaptionTrack,
@@ -45,6 +48,50 @@ test("rejects unsupported YouTube proxy protocols", () => {
     () => resolveYoutubeNetworkConfig({ YOUTUBE_PROXY_URL: "socks5://127.0.0.1:1080" }),
     /仅支持 HTTP\(S\) 代理/
   );
+});
+
+test("extractYoutubePlayerResponse reads balanced JSON from the watch page", () => {
+  const player = {
+    videoDetails: { title: "包含 { 大括号 } 的标题", author: "测试频道" },
+    captions: { playerCaptionsTracklistRenderer: { captionTracks: [] } }
+  };
+  const html = `<html><script>var ytInitialPlayerResponse = ${JSON.stringify(player)};</script></html>`;
+  assert.deepEqual(extractYoutubePlayerResponse(html), player);
+});
+
+test("playerResponseToMetadata separates manual and automatic captions", () => {
+  const metadata = playerResponseToMetadata({
+    videoDetails: { title: "测试视频", author: "测试频道" },
+    captions: {
+      playerCaptionsTracklistRenderer: {
+        captionTracks: [
+          { languageCode: "zh-CN", baseUrl: "https://example.com/manual?lang=zh-CN" },
+          { languageCode: "en", baseUrl: "https://example.com/auto?lang=en", kind: "asr" }
+        ]
+      }
+    }
+  });
+  assert.equal(metadata.title, "测试视频");
+  assert.equal(metadata.channel, "测试频道");
+  assert.equal(metadata.subtitles["zh-CN"][0].url, "https://example.com/manual?lang=zh-CN&fmt=json3");
+  assert.equal(metadata.automatic_captions.en[0].url, "https://example.com/auto?lang=en&fmt=json3");
+});
+
+test("parsePlayerStoryboards creates timed fragments from the watch page spec", () => {
+  const formats = parsePlayerStoryboards({
+    videoDetails: { lengthSeconds: "1902" },
+    storyboards: {
+      playerStoryboardSpecRenderer: {
+        spec: "https://i.ytimg.com/storyboard_L$L/$N.jpg?sigh=$S|320#180#192#3#3#10000#M$M#signature"
+      }
+    }
+  });
+  assert.equal(formats.length, 1);
+  assert.equal(formats[0].width, 320);
+  assert.equal(formats[0].fragments.length, 22);
+  assert.equal(formats[0].fragments[0].url, "https://i.ytimg.com/storyboard_L0/M0.jpg?sigh=signature");
+  assert.equal(formats[0].fragments[0].duration, 89.15625);
+  assert.equal(formats[0].fragments[21].duration, 29.71875);
 });
 
 test("selectCaptionTrack prefers Chinese JSON3 subtitles", () => {
