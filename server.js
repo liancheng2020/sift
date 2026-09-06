@@ -10,6 +10,13 @@ import { resolveProviderConfig, summarizeContent } from "./lib/summarize.js";
 import { resolveSupadataConfig } from "./lib/supadata.js";
 import { fetchYoutubeTranscriptAuto, fetchYoutubeTranscriptFromBrowser, getYoutubeNetworkStatus } from "./lib/youtube.js";
 
+process.on("unhandledRejection", (reason) => {
+  console.error("[sift] unhandled rejection:", reason instanceof Error ? reason.stack || reason.message : String(reason));
+});
+process.on("uncaughtException", (error) => {
+  console.error("[sift] uncaught exception:", error.stack || error.message);
+});
+
 const port = Number(process.env.PORT || 3000);
 const MAX_VIDEO_DURATION_MS = Math.max(1, Number(process.env.YOUTUBE_MAX_DURATION_MINUTES || 60)) * 60_000;
 const YOUTUBE_RATE_LIMIT_MAX = Math.max(1, Number(process.env.YOUTUBE_RATE_LIMIT_MAX || 12));
@@ -191,12 +198,15 @@ createServer(async (request, response) => {
 
     if (request.method === "POST" && pathname === "/api/summarize/file") {
       const upload = await uploadedFile(request);
+      console.info(`[file] 上传完成: ${upload.buffer.length} bytes`);
       const parsed = await parseUploadedFile(upload);
+      console.info(`[file] 解析完成: ${parsed.fileType}, ${parsed.text.length} 字符`);
       const summary = await summarizeContent({
         text: numberParagraphs(parsed.text),
         title: parsed.filename,
         sourceType: `${parsed.fileType} 文件`
       });
+      console.info("[file] 摘要完成");
       return json(response, 200, {
         summary,
         meta: {
