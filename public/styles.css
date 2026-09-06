@@ -203,12 +203,16 @@ button {
 .mode-button {
   min-width: 0;
   height: 52px;
-  padding: 0 17px;
+  padding: 0 10px;
+  overflow: hidden;
   border: 0;
   border-right: 1px solid var(--line);
   background: transparent;
   color: var(--muted);
-  text-align: left;
+  font-size: 15px;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   cursor: pointer;
 }
 .mode-button:last-child {
@@ -942,8 +946,8 @@ a.anchor-row:hover {
   }
   .mode-button {
     height: 49px;
-    padding: 0 11px;
-    font-size: 12px;
+    padding: 0 6px;
+    font-size: 11px;
   }
   .mode-index {
     display: none;
