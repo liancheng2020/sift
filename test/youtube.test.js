@@ -94,6 +94,21 @@ test("parsePlayerStoryboards creates timed fragments from the watch page spec", 
   assert.equal(formats[0].fragments[21].duration, 29.71875);
 });
 
+test("parsePlayerStoryboards appends signatures used by Android player responses", () => {
+  const formats = parsePlayerStoryboards({
+    videoDetails: { lengthSeconds: "100" },
+    storyboards: {
+      playerStoryboardSpecRenderer: {
+        spec: "https://i.ytimg.com/sb/video/storyboard3_L$L/$N.jpg?sqp=value==|160#90#25#5#5#10000#M$M#rs$signature"
+      }
+    }
+  });
+  assert.equal(
+    formats[0].fragments[0].url,
+    "https://i.ytimg.com/sb/video/storyboard3_L0/M0.jpg?sqp=value==&sigh=rs%24signature"
+  );
+});
+
 test("selectCaptionTrack prefers Chinese JSON3 subtitles", () => {
   const selected = selectCaptionTrack({
     subtitles: {
