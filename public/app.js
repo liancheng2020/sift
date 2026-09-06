@@ -184,7 +184,12 @@ function renderDigest(data) {
   const { summary, meta = {} } = data;
   $("#source-badge").textContent = meta.sourceType === "youtube" ? "YOUTUBE" : meta.sourceType === "file" ? meta.fileType || "FILE" : "TEXT";
   $("#digest-title").textContent = meta.title || "内容摘要";
-  const extractionLabel = meta.extractionMethod === "storyboard_ocr" ? "画面字幕识别" : null;
+  const extractionLabels = {
+    storyboard_ocr: "画面字幕识别",
+    browser_captions: "浏览器字幕",
+    browser_storyboard_ocr: "浏览器画面识别"
+  };
+  const extractionLabel = extractionLabels[meta.extractionMethod];
   const metaParts = [meta.author, meta.fileType, meta.language?.toUpperCase(), extractionLabel, `${Number(meta.characters || 0).toLocaleString()} 字符`].filter(Boolean);
   $("#digest-meta").textContent = metaParts.join(" / ");
   elements.digestContent.replaceChildren();
@@ -231,7 +236,64 @@ function setFeedback(type, message) {
   }
 }
 
-async function submitSummary({ form, endpoint, payload, requestBody }) {
+async function parseApiResponse(response) {
+  const text = await response.text();
+  let data;
+  try { data = JSON.parse(text); } catch { throw new Error("服务返回了无法识别的响应"); }
+  if (!response.ok) {
+    const error = new Error(data.error || "请求失败");
+    error.code = data.code;
+    throw error;
+  }
+  return data;
+}
+
+function requestBrowserYoutubeSource(url) {
+  const requestId = crypto.randomUUID();
+  return new Promise((resolve, reject) => {
+    let acknowledged = false;
+    const detectionTimer = setTimeout(() => {
+      if (!acknowledged) finish(reject, new Error("Vercel 出口已被 YouTube 限制，且未检测到 Sift Browser Helper。请先安装仓库 browser-helper 目录中的浏览器助手。"));
+    }, 2_000);
+    const operationTimer = setTimeout(() => {
+      finish(reject, new Error("浏览器读取 YouTube 超时，请检查当前网络后重试。"));
+    }, 45_000);
+    function finish(callback, value) {
+      clearTimeout(detectionTimer);
+      clearTimeout(operationTimer);
+      window.removeEventListener("message", receive);
+      callback(value);
+    }
+    function receive(event) {
+      const message = event.data;
+      if (event.source !== window || event.origin !== location.origin || message?.source !== "sift-browser-helper" || message.requestId !== requestId) return;
+      if (message.type === "SIFT_HELPER_ACK") {
+        acknowledged = true;
+        clearTimeout(detectionTimer);
+        return;
+      }
+      if (message.error) finish(reject, new Error(message.error));
+      else finish(resolve, message.payload);
+    }
+    window.addEventListener("message", receive);
+    window.postMessage({ source: "sift-page", type: "SIFT_EXTRACT_YOUTUBE", requestId, url }, location.origin);
+  });
+}
+
+async function recoverYoutubeWithBrowser(error, url) {
+  const recoverable = new Set(["YOUTUBE_BLOCKED", "YOUTUBE_INVALID_CLOUD_PROXY", "YOUTUBE_NETWORK_ERROR", "YOUTUBE_RUNTIME_ERROR"]);
+  if (!recoverable.has(error.code)) throw error;
+  setFeedback("loading", "云端访问 YouTube 受限，正在尝试通过本机浏览器读取内容……");
+  const source = await requestBrowserYoutubeSource(url);
+  setFeedback("loading", "浏览器读取完成，正在生成结构化摘要……");
+  return parseApiResponse(await fetch("/api/summarize/youtube-browser", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ url, source })
+  }));
+}
+
+async function submitSummary({ form, endpoint, payload, requestBody, recover }) {
   const button = form.querySelector("button[type='submit']");
   const label = button.querySelector(".button-label");
   const idleLabel = label.textContent;
@@ -249,11 +311,13 @@ async function submitSummary({ form, endpoint, payload, requestBody }) {
       options.headers = { "Content-Type": "application/json" };
       options.body = JSON.stringify(payload);
     }
-    const response = await fetch(endpoint, options);
-    const text = await response.text();
     let data;
-    try { data = JSON.parse(text); } catch { throw new Error("服务返回了无法识别的响应"); }
-    if (!response.ok) throw new Error(data.error || "请求失败");
+    try {
+      data = await parseApiResponse(await fetch(endpoint, options));
+    } catch (error) {
+      if (!recover) throw error;
+      data = await recover(error);
+    }
     elements.status.hidden = true;
     renderDigest(data);
     if (window.matchMedia("(max-width: 820px)").matches) {
@@ -270,7 +334,13 @@ async function submitSummary({ form, endpoint, payload, requestBody }) {
 
 $("#youtube-form").addEventListener("submit", (event) => {
   event.preventDefault();
-  submitSummary({ form: event.currentTarget, endpoint: "/api/summarize/youtube", payload: { url: elements.url.value.trim() } });
+  const url = elements.url.value.trim();
+  submitSummary({
+    form: event.currentTarget,
+    endpoint: "/api/summarize/youtube",
+    payload: { url },
+    recover: (error) => recoverYoutubeWithBrowser(error, url)
+  });
 });
 
 $("#file-form").addEventListener("submit", (event) => {

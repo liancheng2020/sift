@@ -7,7 +7,7 @@ import Busboy from "busboy";
 import { extractVideoId, normalizeText, numberParagraphs, transcriptToTimedText } from "./lib/content.js";
 import { MAX_FILE_SIZE, parseUploadedFile } from "./lib/file.js";
 import { resolveProviderConfig, summarizeContent } from "./lib/summarize.js";
-import { fetchYoutubeTranscript, getYoutubeNetworkStatus } from "./lib/youtube.js";
+import { fetchYoutubeTranscript, fetchYoutubeTranscriptFromBrowser, getYoutubeNetworkStatus } from "./lib/youtube.js";
 
 const port = Number(process.env.PORT || 3000);
 const root = fileURLToPath(new URL(".", import.meta.url));
@@ -22,15 +22,38 @@ function json(response, status, data) {
   response.end(JSON.stringify(data));
 }
 
-async function body(request) {
+async function body(request, maxBytes = 2_000_000) {
   const chunks = [];
   let size = 0;
   for await (const chunk of request) {
     size += chunk.length;
-    if (size > 2_000_000) throw new Error("请求内容超过 2MB 限制");
+    if (size > maxBytes) throw new Error(`请求内容超过 ${Math.round(maxBytes / 1_000_000)}MB 限制`);
     chunks.push(chunk);
   }
   return JSON.parse(Buffer.concat(chunks).toString() || "{}");
+}
+
+async function summarizeYoutube(videoId, transcript) {
+  if (!transcript.segments.length) throw new Error("该视频没有可用字幕或画面文字");
+  const text = transcriptToTimedText(transcript.segments);
+  const visualTranscript = transcript.extractionMethod?.includes("storyboard_ocr");
+  const summary = await summarizeContent({
+    text,
+    title: transcript.title || `YouTube ${videoId}`,
+    sourceType: visualTranscript ? "YouTube 画面字幕" : "YouTube 字幕"
+  });
+  return {
+    summary,
+    meta: {
+      title: transcript.title,
+      author: transcript.author,
+      language: transcript.language,
+      sourceType: "youtube",
+      videoId,
+      extractionMethod: transcript.extractionMethod,
+      characters: text.length
+    }
+  };
 }
 
 function uploadedFile(request) {
@@ -101,26 +124,15 @@ createServer(async (request, response) => {
       const payload = await body(request);
       const videoId = extractVideoId(payload.url || "");
       const transcript = await fetchYoutubeTranscript(videoId);
-      if (!transcript.segments.length) return json(response, 422, { error: "该视频没有可用字幕" });
-      const text = transcriptToTimedText(transcript.segments);
-      const visualTranscript = transcript.extractionMethod === "storyboard_ocr";
-      const summary = await summarizeContent({
-        text,
-        title: transcript.title || `YouTube ${videoId}`,
-        sourceType: visualTranscript ? "YouTube 画面字幕" : "YouTube 字幕"
-      });
-      return json(response, 200, {
-        summary,
-        meta: {
-          title: transcript.title,
-          author: transcript.author,
-          language: transcript.language,
-          sourceType: "youtube",
-          videoId,
-          extractionMethod: transcript.extractionMethod,
-          characters: text.length
-        }
-      });
+      return json(response, 200, await summarizeYoutube(videoId, transcript));
+    }
+
+    if (request.method === "POST" && pathname === "/api/summarize/youtube-browser") {
+      const payload = await body(request, 4_000_000);
+      const videoId = extractVideoId(payload.url || "");
+      const transcript = await fetchYoutubeTranscriptFromBrowser(payload.source);
+      if (transcript.videoId !== videoId) throw new Error("浏览器助手返回的视频与请求链接不一致");
+      return json(response, 200, await summarizeYoutube(videoId, transcript));
     }
 
     if (request.method === "POST" && pathname === "/api/summarize/file") {

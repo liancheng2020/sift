@@ -14,6 +14,7 @@
 - 使用 JSON 模式、Schema 指令和服务端归一化，稳定返回七类信息。
 - 支持一键复制和导出 Markdown。
 - 文件、文本和字幕仅在内存中处理，不写入数据库或日志。
+- Vercel 出口被 YouTube 限制时，可通过可选的 Sift Browser Helper 使用用户本机网络读取内容。
 
 统一输出：
 
@@ -107,6 +108,14 @@ YOUTUBE_PROXY_URL=https://user:password@proxy.example.com:8443
 
 Sift 检测到 Vercel 配置了 loopback 代理时会忽略它并尝试直连，`/api/health` 的 `youtube` 字段会显示代理是否启用及配置警告。公网代理失败时也会自动尝试一次直连。
 
+如果 Vercel 直连仍被 YouTube 风控，而用户自己的 Chrome 可以访问 YouTube，可安装仓库中的专用浏览器助手：
+
+1. 打开 `chrome://extensions/` 并启用“开发者模式”。
+2. 点击“加载已解压的扩展程序”，选择本项目的 `browser-helper` 文件夹。
+3. 刷新 Sift 页面后重新提交视频链接。
+
+此时 Chrome 负责读取公开字幕；没有公开字幕时，助手会提交低分辨率故事板，由服务端识别画面硬字幕。助手只响应 Sift 生产地址和本地开发地址，不会把 YouTube Cookie 或账号信息发给 Sift。已安装的 ChatGPT/Codex 插件没有 Sift 所需的网页通信协议和 YouTube 域名权限，不能替代该助手。
+
 修改本地 `.env` 后需要停止并重新运行 `npm start`；修改 Vercel 环境变量后必须重新部署，新变量不会作用于既有部署。Sift 使用 `yt-dlp` 适配 YouTube 页面变化；首次 `npm install` 会下载对应平台的可执行文件。
 
 ## API
@@ -115,6 +124,7 @@ Sift 检测到 Vercel 配置了 loopback 代理时会忽略它并尝试直连，
 | --- | --- | --- |
 | `GET` | `/api/health` | 无 |
 | `POST` | `/api/summarize/youtube` | JSON：`{ "url": "..." }` |
+| `POST` | `/api/summarize/youtube-browser` | 浏览器助手内部接口：YouTube 链接和已提取内容 |
 | `POST` | `/api/summarize/file` | multipart/form-data：字段名 `file` |
 | `POST` | `/api/summarize/text` | JSON：`{ "title": "...", "text": "..." }` |
 

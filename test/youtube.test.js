@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   extractYoutubePlayerResponse,
   getYoutubeNetworkStatus,
+  normalizeBrowserYoutubeSource,
   parseJson3Transcript,
   parsePlayerStoryboards,
   playerResponseToMetadata,
@@ -175,4 +176,67 @@ test("storyboardOcrToSegments converts slide and frame into timestamps", () => {
     { text: "第一条", startMs: 20000 },
     { text: "第二条", startMs: 130000 }
   ]);
+});
+
+test("normalizeBrowserYoutubeSource accepts browser caption segments", () => {
+  assert.deepEqual(normalizeBrowserYoutubeSource({
+    videoId: "rYa0NYICKzc",
+    title: "  测试  视频  ",
+    author: "测试频道",
+    language: "zh-CN",
+    segments: [
+      { text: " 第一段\n字幕 ", startMs: 1200 },
+      { text: "", startMs: 2400 },
+      { text: "第二段字幕", startMs: 3600 }
+    ]
+  }), {
+    videoId: "rYa0NYICKzc",
+    title: "测试 视频",
+    author: "测试频道",
+    language: "zh-CN",
+    segments: [
+      { text: "第一段 字幕", startMs: 1200 },
+      { text: "第二段字幕", startMs: 3600 }
+    ],
+    extractionMethod: "browser_captions"
+  });
+});
+
+test("normalizeBrowserYoutubeSource accepts a small storyboard payload", () => {
+  const normalized = normalizeBrowserYoutubeSource({
+    videoId: "rYa0NYICKzc",
+    title: "测试视频",
+    storyboard: {
+      rows: 3,
+      columns: 3,
+      images: [{
+        mimeType: "image/webp",
+        data: Buffer.from("fake-image").toString("base64"),
+        startSeconds: 0,
+        duration: 90
+      }]
+    }
+  });
+  assert.equal(normalized.videoId, "rYa0NYICKzc");
+  assert.equal(normalized.storyboard.images[0].buffer.toString(), "fake-image");
+});
+
+test("normalizeBrowserYoutubeSource rejects invalid browser payloads", () => {
+  assert.throws(() => normalizeBrowserYoutubeSource({ videoId: "bad" }), /视频 ID 无效/);
+  assert.throws(() => normalizeBrowserYoutubeSource({
+    videoId: "rYa0NYICKzc",
+    storyboard: {
+      rows: 11,
+      columns: 3,
+      images: [{ mimeType: "image/webp", data: "aW1hZ2U=", startSeconds: 0, duration: 1 }]
+    }
+  }), /布局无效/);
+  assert.throws(() => normalizeBrowserYoutubeSource({
+    videoId: "rYa0NYICKzc",
+    storyboard: {
+      rows: 1,
+      columns: 1,
+      images: [{ mimeType: "image/svg+xml", data: "aW1hZ2U=", startSeconds: 0, duration: 1 }]
+    }
+  }), /不支持的图片格式/);
 });
