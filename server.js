@@ -97,7 +97,11 @@ function uploadedFile(request) {
   return new Promise((resolve, reject) => {
     let parser;
     try {
-      parser = Busboy({ headers: request.headers, limits: { files: 1, fileSize: MAX_FILE_SIZE } });
+      parser = Busboy({
+      headers: request.headers,
+      defParamCharset: "utf8",
+      limits: { files: 1, fileSize: MAX_FILE_SIZE }
+    });
     } catch {
       reject(new Error("请使用 multipart/form-data 上传文件"));
       return;
