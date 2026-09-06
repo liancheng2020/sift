@@ -50,7 +50,7 @@ npm test
 
 ## 模型配置
 
-默认使用 DeepSeek：
+最小可运行配置只需要选择 Provider，并填写对应的 API Key。默认使用 DeepSeek：
 
 ```dotenv
 AI_PROVIDER=deepseek
@@ -58,9 +58,6 @@ DEEPSEEK_API_KEY=your_deepseek_api_key
 DEEPSEEK_MODEL=deepseek-chat
 DEEPSEEK_BASE_URL=https://api.deepseek.com
 DEEPSEEK_VISION_MODEL=deepseek-v4-flash-vision-exp
-
-# 中国大陆网络通常需要给服务端单独配置 YouTube 代理
-YOUTUBE_PROXY_URL=http://127.0.0.1:1087
 ```
 
 切换到 OpenAI：
@@ -70,6 +67,25 @@ AI_PROVIDER=openai
 OPENAI_API_KEY=your_openai_api_key
 OPENAI_MODEL=gpt-5-mini
 ```
+
+环境变量说明：
+
+| 变量 | 是否必填 | 默认值 | 用途 |
+| --- | --- | --- | --- |
+| `AI_PROVIDER` | 建议填写 | `deepseek` | 摘要模型提供方，仅支持 `deepseek`、`openai` |
+| `DEEPSEEK_API_KEY` | 使用 DeepSeek 时必填 | 无 | DeepSeek 摘要；无公开字幕时的 YouTube 画面识别也依赖它 |
+| `DEEPSEEK_MODEL` | 否 | `deepseek-chat` | DeepSeek 摘要模型 |
+| `DEEPSEEK_BASE_URL` | 否 | `https://api.deepseek.com` | DeepSeek API 基础地址，也支持填写完整的 `/chat/completions` 地址 |
+| `DEEPSEEK_VISION_MODEL` | 否 | `deepseek-v4-flash-vision-exp` | YouTube 画面字幕识别模型 |
+| `DEEPSEEK_RESPONSES_URL` | 否 | 由 `DEEPSEEK_BASE_URL` 推导 | 画面识别使用的完整 Responses API 地址 |
+| `OPENAI_API_KEY` | 使用 OpenAI 时必填 | 无 | OpenAI 摘要凭证 |
+| `OPENAI_MODEL` | 否 | `gpt-5-mini` | OpenAI 摘要模型 |
+| `OPENAI_BASE_URL` | 否 | `https://api.openai.com/v1` | OpenAI API 基础地址，也支持填写完整的 `/responses` 地址 |
+| `YOUTUBE_PROXY_URL` | 视网络而定 | 无 | Node.js 访问 YouTube 使用的 HTTP 代理，优先级最高 |
+| `HTTPS_PROXY` / `HTTP_PROXY` | 否 | 无 | `YOUTUBE_PROXY_URL` 未配置时的代理回退 |
+| `PORT` | 否 | `3000` | Web 服务监听端口 |
+
+当 `AI_PROVIDER=openai` 时，普通摘要只需要 `OPENAI_API_KEY`；如果还要处理没有公开字幕的 YouTube 视频，则需要额外配置 `DEEPSEEK_API_KEY` 和可用的视觉模型。
 
 API Key 只允许写入本地 `.env`，不要提交到 Git 仓库。
 
