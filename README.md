@@ -6,7 +6,8 @@
 
 ## v0.1 能力
 
-- 支持 YouTube 普通视频、Shorts 和直播回放链接，优先读取公开字幕；无公开字幕时使用 DeepSeek Vision 识别画面中的硬字幕。
+- 支持 YouTube 普通视频、Shorts 和直播回放链接。配置 Supadata 后，线上优先通过 Supadata 读取公开字幕；无公开字幕时由 Supadata 生成 AI 语音转写，访客无需安装扩展、无需本机访问 YouTube。未配置 Supadata 时保留 YouTube 直连解析，无字幕视频可使用 DeepSeek Vision 识别画面中的硬字幕。
+- 相同视频的字幕缓存 24 小时，单视频限 60 分钟，YouTube 接口带单 IP 限流，避免重复消耗转写额度。
 - 支持最大 20MB 的 PDF、DOC、DOCX、TXT、Markdown 文件。
 - 支持粘贴最多 15 万字符的文章、Newsletter、访谈或邮件正文。
 - 自动分段处理长内容，并对分段结果合并去重。
@@ -82,6 +83,13 @@ OPENAI_MODEL=gpt-5-mini
 | `OPENAI_API_KEY` | 使用 OpenAI 时必填 | 无 | OpenAI 摘要凭证 |
 | `OPENAI_MODEL` | 否 | `gpt-5-mini` | OpenAI 摘要模型 |
 | `OPENAI_BASE_URL` | 否 | `https://api.openai.com/v1` | OpenAI API 基础地址，也支持填写完整的 `/responses` 地址 |
+| `SUPADATA_API_KEY` | 线上推荐 | 无 | Supadata Transcript API Key，配置后线上优先使用 Supadata 读取字幕/转写 |
+| `YOUTUBE_TRANSCRIPT_PROVIDER` | 否 | 配置 Key 时为 `supadata` | 设为 `direct` 可强制使用 YouTube 直连解析 |
+| `SUPADATA_POLL_INTERVAL_MS` | 否 | `3000` | Supadata 异步转写任务的轮询间隔 |
+| `SUPADATA_POLL_TIMEOUT_MS` | 否 | `240000` | Supadata 异步转写任务的总等待上限 |
+| `SUPADATA_CACHE_TTL_MS` | 否 | `86400000` | 相同 videoId 字幕缓存时长，默认 24 小时 |
+| `YOUTUBE_MAX_DURATION_MINUTES` | 否 | `60` | 单个视频最大时长，超出直接拒绝 |
+| `YOUTUBE_RATE_LIMIT_MAX` / `YOUTUBE_RATE_WINDOW_MS` | 否 | `12` / `600000` | YouTube 接口单 IP 限流：时间窗内最多请求次数 |
 | `YOUTUBE_PROXY_URL` | 视网络而定 | 无 | Node.js 访问 YouTube 使用的公网 HTTP(S) 代理，优先级最高 |
 | `HTTPS_PROXY` / `HTTP_PROXY` | 否 | 无 | `YOUTUBE_PROXY_URL` 未配置时的代理回退 |
 | `PORT` | 否 | `3000` | Web 服务监听端口 |
@@ -90,7 +98,25 @@ OPENAI_MODEL=gpt-5-mini
 
 API Key 只允许写入本地 `.env`，不要提交到 Git 仓库。
 
+### YouTube 字幕 Provider（Supadata）
+
+线上部署推荐接入 [Supadata](https://supadata.ai) 作为 YouTube Transcript Provider。Vercel 直连 YouTube 容易被风控拦截，而 Supadata 由服务端调用、不依赖部署环境的出口网络：
+
+1. 在 <https://supadata.ai> 注册并获取 API Key。
+2. 在 Vercel 项目的环境变量中配置 `SUPADATA_API_KEY`（可选 `YOUTUBE_TRANSCRIPT_PROVIDER=supadata`，配置 Key 后默认启用），然后重新部署。
+3. 同时删除 Vercel 上的 `YOUTUBE_PROXY_URL=http://127.0.0.1:1087` 等本机代理变量，它们在线上无效。
+
+运行时优先级：
+
+- 配置了 `SUPADATA_API_KEY`：优先 Supadata（先 `mode=native` 读公开字幕，无字幕时自动降级 `mode=auto` 生成语音转写；长视频返回异步任务，服务端轮询直至完成、失败或超时）。
+- Supadata 暂时失败（额度、限流、超时、服务异常）：自动回退 YouTube 直连解析；仍失败时，前端会提示可选装 Sift Browser Helper 作为备用。
+- 未配置 Key（本地开发默认）：保持原有 YouTube 直连逻辑；`YOUTUBE_TRANSCRIPT_PROVIDER=direct` 可强制该模式。
+
+成本说明：Supadata 按次/按时长消耗 credit（原生字幕约 1 credit/次，AI 转写约 2 credit/分钟，以官方定价为准）。Sift 做了三项控制：相同 videoId 的字幕缓存 24 小时；单视频限 60 分钟；`/api/summarize/youtube*` 接口按单 IP 限流。缓存保存在实例内存中，Serverless 多实例之间不共享，但仍能显著减少同一实例上的重复消耗。Supadata 只在服务端调用，API Key 不会出现在浏览器源码、Network 请求或 Git 仓库中。
+
 ### YouTube 网络配置
+
+以下代理配置只影响 YouTube 直连解析（本地开发或 Supadata 回退路径），不影响 Supadata 调用。
 
 Chrome 能访问 YouTube，不代表 Node 服务也能访问：浏览器代理扩展只作用于浏览器。Sift 会优先读取 `YOUTUBE_PROXY_URL`，也兼容 `HTTPS_PROXY` 和 `HTTP_PROXY`。
 
@@ -130,7 +156,8 @@ Sift 检测到 Vercel 配置了 loopback 代理时会忽略它并尝试直连，
 
 ## v0.1 边界
 
-- YouTube 无公开字幕时会尝试识别故事板中的硬字幕；没有画面字幕的纯语音视频仍需要后续接入音频转写服务。
+- 配置 Supadata 后，无公开字幕的视频由 Supadata 生成 AI 语音转写；转写失败时会明确提示“暂时无法生成该视频的字幕”，不会伪造结果。未配置 Supadata 时，无字幕视频回退为识别故事板中的硬字幕，纯语音视频无法处理。
+- 单个视频最长 60 分钟；Supadata 额度不足、转写超时、视频不可访问等情况会分别给出明确错误提示。
 - 每次处理一个来源，不保存历史记录，也不合并多个来源。
 - `.doc` 使用兼容解析器；复杂排版、扫描版 PDF 和图片中的文字可能无法提取。
 - 内容会发送至配置的模型服务，请勿提交无权处理的敏感内容。

@@ -7,9 +7,14 @@ import Busboy from "busboy";
 import { extractVideoId, normalizeText, numberParagraphs, transcriptToTimedText } from "./lib/content.js";
 import { MAX_FILE_SIZE, parseUploadedFile } from "./lib/file.js";
 import { resolveProviderConfig, summarizeContent } from "./lib/summarize.js";
-import { fetchYoutubeTranscript, fetchYoutubeTranscriptFromBrowser, getYoutubeNetworkStatus } from "./lib/youtube.js";
+import { resolveSupadataConfig } from "./lib/supadata.js";
+import { fetchYoutubeTranscriptAuto, fetchYoutubeTranscriptFromBrowser, getYoutubeNetworkStatus } from "./lib/youtube.js";
 
 const port = Number(process.env.PORT || 3000);
+const MAX_VIDEO_DURATION_MS = Math.max(1, Number(process.env.YOUTUBE_MAX_DURATION_MINUTES || 60)) * 60_000;
+const YOUTUBE_RATE_LIMIT_MAX = Math.max(1, Number(process.env.YOUTUBE_RATE_LIMIT_MAX || 12));
+const YOUTUBE_RATE_WINDOW_MS = Math.max(1000, Number(process.env.YOUTUBE_RATE_WINDOW_MS || 600_000));
+const youtubeRateBuckets = new Map();
 const root = fileURLToPath(new URL(".", import.meta.url));
 const mimeTypes = {
   ".html": "text/html; charset=utf-8",
@@ -33,15 +38,47 @@ async function body(request, maxBytes = 2_000_000) {
   return JSON.parse(Buffer.concat(chunks).toString() || "{}");
 }
 
+function codedError(message, code) {
+  const error = new Error(message);
+  error.youtubeCode = code;
+  return error;
+}
+
+function checkYoutubeRateLimit(request) {
+  const ip = request.headers["x-forwarded-for"]?.split(",")[0]?.trim() || request.socket.remoteAddress || "unknown";
+  const now = Date.now();
+  const recent = (youtubeRateBuckets.get(ip) || []).filter((time) => now - time < YOUTUBE_RATE_WINDOW_MS);
+  if (recent.length >= YOUTUBE_RATE_LIMIT_MAX) {
+    const error = new Error("请求过于频繁，请稍后再试");
+    error.statusCode = 429;
+    throw error;
+  }
+  recent.push(now);
+  youtubeRateBuckets.set(ip, recent);
+  if (youtubeRateBuckets.size > 5000) youtubeRateBuckets.clear();
+}
+
 async function summarizeYoutube(videoId, transcript) {
   if (!transcript.segments.length) throw new Error("该视频没有可用字幕或画面文字");
+  const lastSegment = transcript.segments[transcript.segments.length - 1];
+  if (lastSegment?.startMs > MAX_VIDEO_DURATION_MS) {
+    throw codedError(
+      `视频时长超过 ${Math.round(MAX_VIDEO_DURATION_MS / 60_000)} 分钟上限，请选择更短的视频`,
+      "YOUTUBE_DURATION_LIMIT"
+    );
+  }
   const text = transcriptToTimedText(transcript.segments);
   const visualTranscript = transcript.extractionMethod?.includes("storyboard_ocr");
-  const summary = await summarizeContent({
-    text,
-    title: transcript.title || `YouTube ${videoId}`,
-    sourceType: visualTranscript ? "YouTube 画面字幕" : "YouTube 字幕"
-  });
+  let summary;
+  try {
+    summary = await summarizeContent({
+      text,
+      title: transcript.title || `YouTube ${videoId}`,
+      sourceType: visualTranscript ? "YouTube 画面字幕" : "YouTube 字幕"
+    });
+  } catch (error) {
+    throw codedError(`模型摘要失败：${error.message}`, "SUMMARY_FAILED");
+  }
   return {
     summary,
     meta: {
@@ -104,7 +141,10 @@ createServer(async (request, response) => {
           deepseek: Boolean(process.env.DEEPSEEK_API_KEY),
           openai: Boolean(process.env.OPENAI_API_KEY)
         },
-        youtube: getYoutubeNetworkStatus()
+        youtube: {
+          ...getYoutubeNetworkStatus(),
+          transcriptProvider: resolveSupadataConfig().enabled ? "supadata" : "direct"
+        }
       });
     }
 
@@ -121,13 +161,23 @@ createServer(async (request, response) => {
     }
 
     if (request.method === "POST" && pathname === "/api/summarize/youtube") {
+      checkYoutubeRateLimit(request);
       const payload = await body(request);
       const videoId = extractVideoId(payload.url || "");
-      const transcript = await fetchYoutubeTranscript(videoId);
-      return json(response, 200, await summarizeYoutube(videoId, transcript));
+      response.writeHead(200, {
+        "Content-Type": "application/x-ndjson; charset=utf-8",
+        "Cache-Control": "no-cache"
+      });
+      const send = (event) => response.write(`${JSON.stringify(event)}\n`);
+      send({ stage: "captions" });
+      const transcript = await fetchYoutubeTranscriptAuto(videoId, process.env, (stage) => send({ stage }));
+      send({ stage: "summarizing" });
+      send({ result: await summarizeYoutube(videoId, transcript) });
+      return response.end();
     }
 
     if (request.method === "POST" && pathname === "/api/summarize/youtube-browser") {
+      checkYoutubeRateLimit(request);
       const payload = await body(request, 4_000_000);
       const videoId = extractVideoId(payload.url || "");
       const transcript = await fetchYoutubeTranscriptFromBrowser(payload.source);
@@ -161,19 +211,33 @@ createServer(async (request, response) => {
     response.end(file);
   } catch (error) {
     const badRequest = /有效|支持|太短|过长|超过|为空|上传|选择|配置|multipart/.test(error.message);
-    const youtubeFailure = error.youtubeCode?.startsWith("YOUTUBE_");
-    const status = error.code === "ENOENT"
-      ? 404
-      : error.youtubeCode === "YOUTUBE_NO_CAPTIONS"
-        ? 422
-        : youtubeFailure
-          ? 502
-          : badRequest
-            ? 400
-            : 500;
-    json(response, status, {
-      error: status === 404 ? "页面不存在" : error.message || "处理失败",
-      ...(error.youtubeCode ? { code: error.youtubeCode } : {})
-    });
+    const code = error.youtubeCode;
+    const youtubeFailure = code?.startsWith("YOUTUBE_") || code?.startsWith("SUPADATA_");
+    const unprocessable = new Set([
+      "YOUTUBE_NO_CAPTIONS",
+      "YOUTUBE_DURATION_LIMIT",
+      "YOUTUBE_TRANSCRIPT_UNAVAILABLE"
+    ]);
+    const status = error.statusCode
+      || (error.code === "ENOENT" ? 404
+        : code === "YOUTUBE_VIDEO_UNAVAILABLE" ? 404
+          : code === "SUPADATA_INVALID_REQUEST" ? 400
+            : code === "SUPADATA_QUOTA_EXCEEDED" ? 402
+            : code === "SUPADATA_NOT_CONFIGURED" || code === "SUPADATA_UNAUTHORIZED" ? 500
+              : code === "SUPADATA_RATE_LIMITED" ? 503
+                : code === "SUPADATA_TIMEOUT" ? 504
+                  : unprocessable.has(code) ? 422
+                    : youtubeFailure ? 502
+                      : badRequest ? 400
+                        : 500);
+    const payload = {
+      error: status === 404 && !code ? "页面不存在" : error.message || "处理失败",
+      ...(code ? { code } : {})
+    };
+    if (response.headersSent) {
+      response.write(`${JSON.stringify(payload)}\n`);
+      return response.end();
+    }
+    json(response, status, payload);
   }
 }).listen(port, () => console.log(`Sift running at http://localhost:${port}`));

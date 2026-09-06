@@ -187,7 +187,9 @@ function renderDigest(data) {
   const extractionLabels = {
     storyboard_ocr: "画面字幕识别",
     browser_captions: "浏览器字幕",
-    browser_storyboard_ocr: "浏览器画面识别"
+    browser_storyboard_ocr: "浏览器画面识别",
+    supadata_native: "云端字幕",
+    supadata_auto: "AI 语音转写"
   };
   const extractionLabel = extractionLabels[meta.extractionMethod];
   const metaParts = [meta.author, meta.fileType, meta.language?.toUpperCase(), extractionLabel, `${Number(meta.characters || 0).toLocaleString()} 字符`].filter(Boolean);
@@ -280,6 +282,51 @@ function requestBrowserYoutubeSource(url) {
   });
 }
 
+const YOUTUBE_STAGE_MESSAGES = {
+  captions: "正在读取视频字幕……",
+  transcribing: "未发现公开字幕，正在生成语音转写，长视频可能需要几分钟……",
+  summarizing: "正在生成结构化摘要……"
+};
+
+async function postYoutubeSummary(url) {
+  const response = await fetch("/api/summarize/youtube", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ url })
+  });
+  if (!(response.headers.get("content-type") || "").includes("x-ndjson")) {
+    return parseApiResponse(response);
+  }
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  let result = null;
+  let failure = null;
+  const handleLine = (line) => {
+    if (!line.trim()) return;
+    const event = JSON.parse(line);
+    if (event.stage && YOUTUBE_STAGE_MESSAGES[event.stage]) {
+      setFeedback("loading", YOUTUBE_STAGE_MESSAGES[event.stage]);
+    } else if (event.error) {
+      failure = Object.assign(new Error(event.error), { code: event.code });
+    } else if (event.result) {
+      result = event.result;
+    }
+  };
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split("\n");
+    buffer = lines.pop() || "";
+    lines.forEach(handleLine);
+  }
+  handleLine(buffer);
+  if (failure) throw failure;
+  if (!result) throw new Error("服务返回了无法识别的响应");
+  return result;
+}
+
 async function recoverYoutubeWithBrowser(error, url) {
   const recoverable = new Set(["YOUTUBE_BLOCKED", "YOUTUBE_INVALID_CLOUD_PROXY", "YOUTUBE_NETWORK_ERROR", "YOUTUBE_RUNTIME_ERROR"]);
   if (!recoverable.has(error.code)) throw error;
@@ -293,7 +340,7 @@ async function recoverYoutubeWithBrowser(error, url) {
   }));
 }
 
-async function submitSummary({ form, endpoint, payload, requestBody, recover }) {
+async function submitSummary({ form, endpoint, payload, requestBody, perform, recover }) {
   const button = form.querySelector("button[type='submit']");
   const label = button.querySelector(".button-label");
   const idleLabel = label.textContent;
@@ -304,16 +351,14 @@ async function submitSummary({ form, endpoint, payload, requestBody, recover }) 
   elements.resultActions.hidden = true;
   setFeedback("loading", "正在读取来源并构建结构化摘要，长内容可能需要一些时间……");
   try {
-    const options = { method: "POST" };
-    if (requestBody) {
-      options.body = requestBody;
-    } else {
-      options.headers = { "Content-Type": "application/json" };
-      options.body = JSON.stringify(payload);
-    }
     let data;
     try {
-      data = await parseApiResponse(await fetch(endpoint, options));
+      data = perform ? await perform() : await parseApiResponse(await fetch(endpoint, {
+        method: "POST",
+        ...(requestBody
+          ? { body: requestBody }
+          : { headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) })
+      }));
     } catch (error) {
       if (!recover) throw error;
       data = await recover(error);
@@ -337,8 +382,7 @@ $("#youtube-form").addEventListener("submit", (event) => {
   const url = elements.url.value.trim();
   submitSummary({
     form: event.currentTarget,
-    endpoint: "/api/summarize/youtube",
-    payload: { url },
+    perform: () => postYoutubeSummary(url),
     recover: (error) => recoverYoutubeWithBrowser(error, url)
   });
 });
