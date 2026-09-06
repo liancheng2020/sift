@@ -65,6 +65,10 @@ function formatFileSize(bytes) {
   return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 }
 
+function fileExtension(file) {
+  return `.${file.name.split(".").pop()?.toLowerCase() || ""}`;
+}
+
 function selectFile(file) {
   selectedFile = file || null;
   const submit = $("#file-form button[type='submit']");
@@ -256,6 +260,20 @@ async function parseApiResponse(response) {
   return data;
 }
 
+async function summarizePdfLocally(file) {
+  setFeedback("loading", "正在浏览器中解析 PDF，文件不会上传到服务器……");
+  const { extractPdfText } = await import("/pdf-parser.js");
+  const text = await extractPdfText(file, ({ page, total }) => {
+    setFeedback("loading", `正在浏览器中解析 PDF（${page}/${total} 页）……`);
+  });
+  setFeedback("loading", "PDF 解析完成，正在生成结构化摘要……");
+  return parseApiResponse(await fetch("/api/summarize/file-text", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ filename: file.name, fileType: "PDF", text })
+  }));
+}
+
 function requestBrowserYoutubeSource(url) {
   const requestId = crypto.randomUUID();
   return new Promise((resolve, reject) => {
@@ -403,9 +421,19 @@ $("#file-form").addEventListener("submit", (event) => {
     setFeedback("error", "文件超过 20MB 限制。");
     return;
   }
+  const extension = fileExtension(selectedFile);
+  if (extension !== ".pdf" && selectedFile.size > 4 * 1024 * 1024) {
+    setFeedback("error", "Vercel 在线版的 Word/TXT/Markdown 文件请控制在 4MB 以内。");
+    return;
+  }
   const formData = new FormData();
   formData.append("file", selectedFile);
-  submitSummary({ form: event.currentTarget, endpoint: "/api/summarize/file", requestBody: formData });
+  submitSummary({
+    form: event.currentTarget,
+    ...(extension === ".pdf"
+      ? { perform: () => summarizePdfLocally(selectedFile) }
+      : { endpoint: "/api/summarize/file", requestBody: formData })
+  });
 });
 
 $("#text-form").addEventListener("submit", (event) => {

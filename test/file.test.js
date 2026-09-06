@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { parseUploadedFile, validateFileInput } from "../lib/file.js";
+import { parseUploadedFile, validateExtractedFileText, validateFileInput } from "../lib/file.js";
 
 const enoughText = "这是一段用于验证多来源文件摘要解析能力的测试内容。".repeat(8);
 
@@ -36,5 +36,27 @@ test("parseUploadedFile rejects content that is too short", async () => {
   await assert.rejects(
     parseUploadedFile({ filename: "short.md", buffer: Buffer.from("内容太短") }),
     /至少提供 80 个字符/
+  );
+});
+
+test("validateExtractedFileText accepts browser-extracted PDF text", () => {
+  const result = validateExtractedFileText({
+    filename: "../report.pdf",
+    fileType: "pdf",
+    text: enoughText
+  });
+  assert.equal(result.filename, "report.pdf");
+  assert.equal(result.fileType, "PDF");
+  assert.match(result.text, /多来源文件摘要/);
+});
+
+test("validateExtractedFileText rejects non-PDF and image-only content", () => {
+  assert.throws(
+    () => validateExtractedFileText({ filename: "report.docx", fileType: "DOCX", text: enoughText }),
+    /仅支持 PDF/
+  );
+  assert.throws(
+    () => validateExtractedFileText({ filename: "scan.pdf", fileType: "PDF", text: "图片" }),
+    /扫描件或图片型 PDF/
   );
 });

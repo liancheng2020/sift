@@ -5,7 +5,7 @@ import { extname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import Busboy from "busboy";
 import { extractVideoId, normalizeText, numberParagraphs, transcriptToTimedText } from "./lib/content.js";
-import { MAX_FILE_SIZE, parseUploadedFile } from "./lib/file.js";
+import { MAX_FILE_SIZE, parseUploadedFile, validateExtractedFileText } from "./lib/file.js";
 import { resolveProviderConfig, summarizeContent } from "./lib/summarize.js";
 import { resolveSupadataConfig } from "./lib/supadata.js";
 import { fetchYoutubeTranscriptAuto, fetchYoutubeTranscriptFromBrowser, getYoutubeNetworkStatus } from "./lib/youtube.js";
@@ -26,7 +26,8 @@ const root = fileURLToPath(new URL(".", import.meta.url));
 const mimeTypes = {
   ".html": "text/html; charset=utf-8",
   ".css": "text/css; charset=utf-8",
-  ".js": "text/javascript; charset=utf-8"
+  ".js": "text/javascript; charset=utf-8",
+  ".mjs": "text/javascript; charset=utf-8"
 };
 
 function json(response, status, data) {
@@ -95,6 +96,23 @@ async function summarizeYoutube(videoId, transcript) {
       sourceType: "youtube",
       videoId,
       extractionMethod: transcript.extractionMethod,
+      characters: text.length
+    }
+  };
+}
+
+async function summarizeFileContent({ filename, fileType, text }) {
+  const summary = await summarizeContent({
+    text: numberParagraphs(text),
+    title: filename,
+    sourceType: `${fileType} 文件`
+  });
+  return {
+    summary,
+    meta: {
+      title: filename,
+      sourceType: "file",
+      fileType,
       characters: text.length
     }
   };
@@ -196,12 +214,10 @@ createServer(async (request, response) => {
       return json(response, 200, await summarizeYoutube(videoId, transcript));
     }
 
-    if (request.method === "POST" && pathname === "/api/debug/parse-file") {
-      const upload = await uploadedFile(request);
-      console.info(`[debug] 上传完成: ${upload.buffer.length} bytes`);
-      const parsed = await parseUploadedFile(upload);
-      console.info(`[debug] 解析完成: ${parsed.text.length} 字符`);
-      return json(response, 200, { ok: true, fileType: parsed.fileType, characters: parsed.text.length });
+    if (request.method === "POST" && pathname === "/api/summarize/file-text") {
+      const payload = await body(request);
+      const parsed = validateExtractedFileText(payload);
+      return json(response, 200, await summarizeFileContent(parsed));
     }
 
     if (request.method === "POST" && pathname === "/api/summarize/file") {
@@ -209,21 +225,9 @@ createServer(async (request, response) => {
       console.info(`[file] 上传完成: ${upload.buffer.length} bytes`);
       const parsed = await parseUploadedFile(upload);
       console.info(`[file] 解析完成: ${parsed.fileType}, ${parsed.text.length} 字符`);
-      const summary = await summarizeContent({
-        text: numberParagraphs(parsed.text),
-        title: parsed.filename,
-        sourceType: `${parsed.fileType} 文件`
-      });
+      const result = await summarizeFileContent(parsed);
       console.info("[file] 摘要完成");
-      return json(response, 200, {
-        summary,
-        meta: {
-          title: parsed.filename,
-          sourceType: "file",
-          fileType: parsed.fileType,
-          characters: parsed.text.length
-        }
-      });
+      return json(response, 200, result);
     }
 
     const staticPath = pathname === "/" ? "/index.html" : pathname;

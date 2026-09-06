@@ -62,7 +62,7 @@
           <form id="file-form" class="input-panel" role="tabpanel" aria-labelledby="file-tab" hidden>
             <div class="field-heading">
               <label for="content-file">本地内容文件</label>
-              <span>MAX 20MB</span>
+              <span>PDF 20MB / 其他 4MB</span>
             </div>
             <label class="file-drop" id="file-drop" for="content-file">
               <input id="content-file" type="file" accept=".pdf,.doc,.docx,.txt,.md" />
@@ -74,7 +74,7 @@
               <div><strong id="file-name"></strong><span id="file-size"></span></div>
               <button id="clear-file" class="text-action" type="button">移除</button>
             </div>
-            <p class="field-message">文件仅在内存中解析，摘要生成后不会保存在服务器。</p>
+            <p class="field-message">PDF 在浏览器本地解析，仅提取后的文本用于生成摘要；文件不会被保存。</p>
             <button class="primary-action" type="submit" disabled>
               <span class="button-label">启动文件分析</span>
               <span class="action-arrow" aria-hidden="true">↗</span>

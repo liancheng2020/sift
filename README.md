@@ -7,7 +7,7 @@
 ## v0.1 能力
 
 - **YouTube**：支持普通视频、Shorts 和直播回放。配置 Supadata 后，线上优先读取公开字幕，无字幕时自动生成 AI 语音转写，访客无需安装扩展、无需本机访问 YouTube；未配置时保留 YouTube 直连解析，无字幕视频可用 DeepSeek Vision 识别画面硬字幕。
-- **文件**：最大 20MB 的 PDF、DOC、DOCX、TXT、Markdown。
+- **文件**：PDF 最大 20MB，并在浏览器本地解析；DOC、DOCX、TXT、Markdown 在线上传最大 4MB。
 - **文本**：最多 15 万字符，自动分段处理并合并去重。
 - **摘要模型**：默认 DeepSeek，可切换 OpenAI；JSON 模式 + Schema 指令 + 服务端归一化，输出稳定。
 - **成本控制**：字幕缓存 24 小时、单视频限 60 分钟、接口按单 IP 限流。
@@ -91,6 +91,7 @@ YOUTUBE_PROXY_URL=http://127.0.0.1:1087
 | `POST` | `/api/summarize/youtube` | JSON：`{ "url": "..." }`（NDJSON 流式返回阶段进度与结果） |
 | `POST` | `/api/summarize/youtube-browser` | 浏览器助手内部接口 |
 | `POST` | `/api/summarize/file` | multipart/form-data：字段名 `file` |
+| `POST` | `/api/summarize/file-text` | 浏览器解析 PDF 后提交提取文本 |
 | `POST` | `/api/summarize/text` | JSON：`{ "title": "...", "text": "..." }` |
 
 ## v0.1 边界
