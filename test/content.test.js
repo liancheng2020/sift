@@ -1,10 +1,20 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { chunkText, extractVideoId, formatTimestamp, normalizeText, numberParagraphs, transcriptToText, transcriptToTimedText } from "../lib/content.js";
+import { chunkSourceText, chunkText, extractVideoId, formatTimestamp, normalizeText, numberParagraphs, transcriptToText, transcriptToTimedText } from "../lib/content.js";
 test("extractVideoId supports common URLs",()=>{assert.equal(extractVideoId("https://www.youtube.com/watch?v=dQw4w9WgXcQ"),"dQw4w9WgXcQ");assert.equal(extractVideoId("https://youtu.be/dQw4w9WgXcQ?t=10"),"dQw4w9WgXcQ");assert.equal(extractVideoId("https://youtube.com/shorts/dQw4w9WgXcQ"),"dQw4w9WgXcQ")});
 test("rejects unsupported hosts",()=>assert.throws(()=>extractVideoId("https://example.com/watch?v=dQw4w9WgXcQ")));
 test("normalizes whitespace",()=>assert.equal(normalizeText(" hello   world\n\n\nnext "),"hello world\n\nnext"));
 test("chunks preserve content",()=>{const source="a".repeat(15)+"\n\n"+"b".repeat(15),chunks=chunkText(source,20);assert.equal(chunks.length,2);assert.equal(chunks.join("\n\n"),source)});
+test("youtube chunks keep timestamped caption lines intact", () => {
+  const source = "[0:00] 第一句字幕\n[0:10] 第二句字幕\n[0:20] 第三句字幕";
+  const chunks = chunkSourceText(source, { maxLength: 25, sourceType: "youtube" });
+  assert.ok(chunks.every((chunk) => chunk.length <= 25));
+  assert.deepEqual(chunks.flatMap((chunk) => chunk.split("\n")), source.split("\n"));
+});
+test("long prose prefers sentence boundaries", () => {
+  const chunks = chunkSourceText("第一句话。第二句话。第三句话。", { maxLength: 11 });
+  assert.deepEqual(chunks, ["第一句话。第二句话。", "第三句话。"]);
+});
 test("joins transcript entries",()=>assert.equal(transcriptToText([{text:"第一句"},{text:"第二句"}]),"第一句 第二句"));
 test("keeps transcript timestamps",()=>assert.equal(transcriptToTimedText([{text:"第一句",startMs:65000},{text:"第二句",startMs:3723000}]),"[1:05] 第一句\n[1:02:03] 第二句"));
 test("formats timestamps",()=>{assert.equal(formatTimestamp(0),"0:00");assert.equal(formatTimestamp(61000),"1:01")});

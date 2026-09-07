@@ -19,7 +19,8 @@ const elements = {
   fileSize: $("#file-size"),
   count: $("#character-count"),
   system: $("#system-status"),
-  systemLabel: $("#system-label")
+  systemLabel: $("#system-label"),
+  summaryModes: $$("input[name='summary-mode']")
 };
 
 const sampleText = `过去一年，越来越多的软件团队开始把生成式人工智能接入研发流程。某技术团队对120名工程师进行了为期12周的内部实验，参与者可以在代码检索、测试生成和文档整理中使用AI助手。实验显示，重复性任务的平均完成时间下降了31%，但复杂故障的首次解决率只提升了8%。
@@ -120,72 +121,152 @@ function section(title, code, content) {
   return wrapper;
 }
 
-function renderStringList(items, emptyMessage) {
-  if (!items?.length) return renderEmpty(emptyMessage);
-  const list = create("ol", "signal-list");
+function youtubeLink(meta, seconds) {
+  return meta.sourceType === "youtube" && meta.videoId && Number.isInteger(seconds)
+    ? `https://youtu.be/${encodeURIComponent(meta.videoId)}?t=${seconds}`
+    : "";
+}
+
+function renderEvidence(evidence, meta) {
+  const details = create("details", "evidence");
+  details.append(create("summary", "", `查看依据 · ${evidence.locator}`));
+  const body = create("div", "evidence-body");
+  body.append(create("blockquote", "", evidence.quote));
+  const link = youtubeLink(meta, evidence.seconds);
+  if (link) {
+    const jump = create("a", "evidence-jump", "从该时间播放 ↗");
+    jump.href = link;
+    jump.target = "_blank";
+    jump.rel = "noreferrer";
+    body.append(jump);
+  }
+  details.append(body);
+  return details;
+}
+
+function renderKeyPoints(items, meta) {
+  const list = create("div", "key-point-list");
   items.forEach((item, index) => {
-    const row = create("li");
-    row.append(create("span", "list-index", String(index + 1).padStart(2, "0")), create("p", "", item));
-    list.append(row);
-  });
-  return list;
-}
-
-function renderEntities(items) {
-  if (!items?.length) return renderEmpty("没有识别到需要单独列出的公司、行业或人物。");
-  const grid = create("div", "entity-grid");
-  items.forEach((item) => {
-    const card = create("article", "entity-card");
-    const top = create("div", "entity-top");
-    top.append(create("strong", "", item.name), create("span", "", item.type || "实体"));
-    card.append(top, create("p", "", item.context));
-    grid.append(card);
-  });
-  return grid;
-}
-
-function renderKeyData(items) {
-  if (!items?.length) return renderEmpty("原文没有包含影响结论的关键数据。");
-  const grid = create("div", "data-grid");
-  items.forEach((item) => {
-    const card = create("article", "data-card");
-    card.append(create("span", "", item.label), create("strong", "", item.value), create("p", "", item.context));
-    grid.append(card);
-  });
-  return grid;
-}
-
-function renderViewpoints(items) {
-  if (!items?.length) return renderEmpty("原文没有提出需要展开的重要观点。");
-  const list = create("div", "viewpoint-list");
-  items.forEach((item) => {
-    const card = create("article", "viewpoint-card");
-    card.append(create("strong", "", item.statement), create("p", "", item.reason));
+    const card = create("article", "key-point-card");
+    const heading = create("div", "key-point-heading");
+    heading.append(create("span", "list-index", String(index + 1).padStart(2, "0")), create("h5", "", item.title));
+    card.append(heading, create("p", "", item.summary), renderEvidence(item.evidence, meta));
     list.append(card);
   });
   return list;
 }
 
-function renderAnchors(items, meta) {
-  if (!items?.length) return renderEmpty("当前摘要没有返回可用的原文定位。");
-  const list = create("div", "anchor-list");
+function renderKeyData(items, meta) {
+  const grid = create("div", "data-grid");
   items.forEach((item) => {
-    const tag = meta.sourceType === "youtube" && Number.isInteger(item.seconds) && meta.videoId ? "a" : "div";
-    const row = create(tag, "anchor-row");
-    if (tag === "a") {
-      row.href = `https://youtu.be/${encodeURIComponent(meta.videoId)}?t=${item.seconds}`;
+    const card = create("article", "data-card");
+    card.append(
+      create("span", "", item.label),
+      create("strong", "", item.value),
+      create("p", "", item.context),
+      renderEvidence(item.evidence, meta)
+    );
+    grid.append(card);
+  });
+  return grid;
+}
+
+function renderGroundedList(items, meta, describe, extra) {
+  const list = create("div", "grounded-list");
+  items.forEach((item) => {
+    const card = create("article", "grounded-card");
+    card.append(create("p", "", describe(item)));
+    const tags = extra?.(item)?.filter(Boolean) || [];
+    if (tags.length) {
+      const metaRow = create("div", "action-meta");
+      tags.forEach((tag) => metaRow.append(create("span", "", tag)));
+      card.append(metaRow);
+    }
+    card.append(renderEvidence(item.evidence, meta));
+    list.append(card);
+  });
+  return list;
+}
+
+function renderOutline(items, meta) {
+  const list = create("div", "timeline-list");
+  items.forEach((item, index) => {
+    const link = youtubeLink(meta, item.seconds);
+    const row = create(link ? "a" : "div", "timeline-row");
+    if (link) {
+      row.href = link;
       row.target = "_blank";
       row.rel = "noreferrer";
     }
-    row.append(create("span", "anchor-locator", item.locator), create("p", "", item.label), create("span", "anchor-arrow", tag === "a" ? "↗" : "•"));
+    const marker = create("div", "timeline-marker");
+    marker.append(create("span", "", String(index + 1).padStart(2, "0")), create("i"));
+    const content = create("div", "timeline-content");
+    const title = create("div", "timeline-title");
+    title.append(create("strong", "", item.title), create("span", "", item.locator));
+    content.append(title, create("p", "", item.summary));
+    row.append(marker, content);
     list.append(row);
   });
   return list;
 }
 
+function normalizeSummaryForView(value) {
+  const summary = value && typeof value === "object" ? value : {};
+  if (summary.overview && Array.isArray(summary.keyPoints)) return summary;
+
+  const anchors = Array.isArray(summary.sourceAnchors) ? summary.sourceAnchors : [];
+  const evidenceFor = (index, quote) => {
+    const anchor = anchors[index] || anchors[0] || {};
+    return {
+      locator: anchor.locator || "旧版摘要",
+      seconds: Number.isInteger(anchor.seconds) ? anchor.seconds : null,
+      quote: String(quote || anchor.label || "旧版接口未返回原文引文").slice(0, 160)
+    };
+  };
+  const coreContent = Array.isArray(summary.coreContent) ? summary.coreContent : [];
+  const viewpoints = Array.isArray(summary.viewpoints) ? summary.viewpoints : [];
+  return {
+    overview: {
+      oneLiner: summary.conclusion || "接口返回了旧版摘要，请重启服务后重新生成。",
+      topic: "兼容旧版输出"
+    },
+    keyPoints: [
+      ...coreContent.map((item, index) => ({
+        title: `重点 ${index + 1}`,
+        summary: item,
+        evidence: evidenceFor(index, item)
+      })),
+      ...viewpoints.map((item, index) => ({
+        title: item.statement || `观点 ${index + 1}`,
+        summary: item.reason || item.statement,
+        evidence: evidenceFor(coreContent.length + index, item.reason || item.statement)
+      }))
+    ].slice(0, 8),
+    keyData: (Array.isArray(summary.keyData) ? summary.keyData : []).map((item, index) => ({
+      label: item.label,
+      value: item.value,
+      context: item.context || "",
+      evidence: evidenceFor(index, item.context || `${item.label}：${item.value}`)
+    })),
+    decisions: [],
+    actionItems: [],
+    risks: (Array.isArray(summary.risks) ? summary.risks : []).map((item, index) => ({
+      description: item,
+      evidence: evidenceFor(index, item)
+    })),
+    outline: anchors.map((item) => ({
+      title: item.label || "原文定位",
+      summary: item.label || "",
+      locator: item.locator,
+      seconds: Number.isInteger(item.seconds) ? item.seconds : null
+    }))
+  };
+}
+
 function renderDigest(data) {
-  latestResult = data;
-  const { summary, meta = {} } = data;
+  const { summary: rawSummary, meta = {} } = data;
+  const summary = normalizeSummaryForView(rawSummary);
+  latestResult = { ...data, summary };
   $("#source-badge").textContent = meta.sourceType === "youtube" ? "YOUTUBE" : meta.sourceType === "file" ? meta.fileType || "FILE" : "TEXT";
   $("#digest-title").textContent = meta.title || "内容摘要";
   const extractionLabels = {
@@ -196,21 +277,44 @@ function renderDigest(data) {
     supadata_auto: "AI 语音转写"
   };
   const extractionLabel = extractionLabels[meta.extractionMethod];
-  const metaParts = [meta.author, meta.fileType, meta.language?.toUpperCase(), extractionLabel, `${Number(meta.characters || 0).toLocaleString()} 字符`].filter(Boolean);
+  const modeLabels = { concise: "简洁摘要", standard: "标准摘要", deep: "深度摘要" };
+  const duration = meta.sourceType === "youtube" && meta.sourceMinutes
+    ? `约 ${meta.sourceMinutes} 分钟视频`
+    : meta.readingMinutes ? `约 ${meta.readingMinutes} 分钟阅读` : "";
+  const metaParts = [
+    meta.author,
+    meta.fileType,
+    meta.language?.toUpperCase(),
+    extractionLabel,
+    modeLabels[meta.summaryMode],
+    duration,
+    `${Number(meta.characters || 0).toLocaleString()} 字符`
+  ].filter(Boolean);
   $("#digest-meta").textContent = metaParts.join(" / ");
   elements.digestContent.replaceChildren();
 
   const conclusion = create("blockquote", "conclusion");
-  conclusion.append(create("span", "", "ONE-LINE SIGNAL"), create("p", "", summary.conclusion || "暂未生成有效结论。"));
-  elements.digestContent.append(
-    conclusion,
-    section("核心内容", "01", renderStringList(summary.coreContent, "没有提取到核心内容。")),
-    section("涉及的公司、行业和人物", "02", renderEntities(summary.entities)),
-    section("关键数据", "03", renderKeyData(summary.keyData)),
-    section("重要观点及理由", "04", renderViewpoints(summary.viewpoints)),
-    section("风险或争议", "05", renderStringList(summary.risks, "原文没有明确提出风险或争议。")),
-    section("原文定位", "06", renderAnchors(summary.sourceAnchors, meta))
-  );
+  const signalTop = create("div", "conclusion-top");
+  signalTop.append(create("span", "", "ONE-LINE SIGNAL"), create("b", "", summary.overview.topic));
+  conclusion.append(signalTop, create("p", "", summary.overview.oneLiner));
+  elements.digestContent.append(conclusion);
+
+  let sectionIndex = 1;
+  const appendSection = (title, items, renderer) => {
+    if (!items?.length) return;
+    elements.digestContent.append(section(title, String(sectionIndex++).padStart(2, "0"), renderer(items, meta)));
+  };
+  appendSection("重点摘要", summary.keyPoints, renderKeyPoints);
+  appendSection("关键数据", summary.keyData, renderKeyData);
+  appendSection("已做决定", summary.decisions, (items) => renderGroundedList(items, meta, (item) => item.statement));
+  appendSection("后续行动", summary.actionItems, (items) => renderGroundedList(
+    items,
+    meta,
+    (item) => item.task,
+    (item) => [item.owner && `负责人：${item.owner}`, item.deadline && `期限：${item.deadline}`]
+  ));
+  appendSection("风险与限制", summary.risks, (items) => renderGroundedList(items, meta, (item) => item.description));
+  appendSection(meta.sourceType === "youtube" ? "视频时间轴" : "内容脉络", summary.outline, renderOutline);
 
   elements.empty.hidden = true;
   elements.digest.hidden = false;
@@ -218,16 +322,17 @@ function renderDigest(data) {
 }
 
 function summaryToMarkdown({ summary, meta = {} }) {
-  const lines = [`# ${meta.title || "内容摘要"}`, "", `> ${summary.conclusion || "暂未生成有效结论。"}`, ""];
+  const lines = [`# ${meta.title || "内容摘要"}`, "", `> ${summary.overview.oneLiner}`, "", `主题：${summary.overview.topic}`, ""];
+  const evidence = (item) => `（依据：${item.evidence.locator}「${item.evidence.quote}」）`;
   const addList = (title, items, formatter = (item) => item) => {
-    lines.push(`## ${title}`, "", ...(items?.length ? items.map((item) => `- ${formatter(item)}`) : ["- 无"]), "");
+    if (items?.length) lines.push(`## ${title}`, "", ...items.map((item) => `- ${formatter(item)}`), "");
   };
-  addList("核心内容", summary.coreContent);
-  addList("涉及的公司、行业和人物", summary.entities, (item) => `**${item.name}**（${item.type || "实体"}）：${item.context}`);
-  addList("关键数据", summary.keyData, (item) => `**${item.label}：${item.value}** — ${item.context}`);
-  addList("重要观点及理由", summary.viewpoints, (item) => `**${item.statement}**：${item.reason}`);
-  addList("风险或争议", summary.risks);
-  addList("原文定位", summary.sourceAnchors, (item) => `**${item.locator}**：${item.label}`);
+  addList("重点摘要", summary.keyPoints, (item) => `**${item.title}**：${item.summary} ${evidence(item)}`);
+  addList("关键数据", summary.keyData, (item) => `**${item.label}：${item.value}** — ${item.context} ${evidence(item)}`);
+  addList("已做决定", summary.decisions, (item) => `${item.statement} ${evidence(item)}`);
+  addList("后续行动", summary.actionItems, (item) => `${item.task}${item.owner ? `；负责人：${item.owner}` : ""}${item.deadline ? `；期限：${item.deadline}` : ""} ${evidence(item)}`);
+  addList("风险与限制", summary.risks, (item) => `${item.description} ${evidence(item)}`);
+  addList(meta.sourceType === "youtube" ? "视频时间轴" : "内容脉络", summary.outline, (item) => `**${item.locator} ${item.title}**：${item.summary}`);
   return lines.join("\n");
 }
 
@@ -260,7 +365,18 @@ async function parseApiResponse(response) {
   return data;
 }
 
-async function summarizePdfLocally(file) {
+function selectedSummaryMode() {
+  return elements.summaryModes.find((input) => input.checked)?.value || "standard";
+}
+
+function requestHeaders(summaryMode, json = true) {
+  return {
+    ...(json ? { "Content-Type": "application/json" } : {}),
+    "X-Sift-Summary-Mode": summaryMode
+  };
+}
+
+async function summarizePdfLocally(file, summaryMode) {
   setFeedback("loading", "正在浏览器中解析 PDF，文件不会上传到服务器……");
   const { extractPdfText } = await import("/pdf-parser.js");
   const text = await extractPdfText(file, ({ page, total }) => {
@@ -269,8 +385,8 @@ async function summarizePdfLocally(file) {
   setFeedback("loading", "PDF 解析完成，正在生成结构化摘要……");
   return parseApiResponse(await fetch("/api/summarize/file-text", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ filename: file.name, fileType: "PDF", text })
+    headers: requestHeaders(summaryMode),
+    body: JSON.stringify({ filename: file.name, fileType: "PDF", text, summaryMode })
   }));
 }
 
@@ -312,11 +428,11 @@ const YOUTUBE_STAGE_MESSAGES = {
   summarizing: "正在生成结构化摘要……"
 };
 
-async function postYoutubeSummary(url) {
+async function postYoutubeSummary(url, summaryMode) {
   const response = await fetch("/api/summarize/youtube", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ url })
+    headers: requestHeaders(summaryMode),
+    body: JSON.stringify({ url, summaryMode })
   });
   if (!(response.headers.get("content-type") || "").includes("x-ndjson")) {
     return parseApiResponse(response);
@@ -351,7 +467,7 @@ async function postYoutubeSummary(url) {
   return result;
 }
 
-async function recoverYoutubeWithBrowser(error, url) {
+async function recoverYoutubeWithBrowser(error, url, summaryMode) {
   const recoverable = new Set(["YOUTUBE_BLOCKED", "YOUTUBE_INVALID_CLOUD_PROXY", "YOUTUBE_NETWORK_ERROR", "YOUTUBE_RUNTIME_ERROR"]);
   if (!recoverable.has(error.code)) throw error;
   setFeedback("loading", "云端访问 YouTube 受限，正在尝试通过本机浏览器读取内容……");
@@ -359,8 +475,8 @@ async function recoverYoutubeWithBrowser(error, url) {
   setFeedback("loading", "浏览器读取完成，正在生成结构化摘要……");
   return parseApiResponse(await fetch("/api/summarize/youtube-browser", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ url, source })
+    headers: requestHeaders(summaryMode),
+    body: JSON.stringify({ url, source, summaryMode })
   }));
 }
 
@@ -368,7 +484,9 @@ async function submitSummary({ form, endpoint, payload, requestBody, perform, re
   const button = form.querySelector("button[type='submit']");
   const label = button.querySelector(".button-label");
   const idleLabel = label.textContent;
+  const summaryMode = selectedSummaryMode();
   button.disabled = true;
+  elements.summaryModes.forEach((input) => { input.disabled = true; });
   label.textContent = "正在分析内容";
   elements.empty.hidden = true;
   elements.digest.hidden = true;
@@ -377,15 +495,15 @@ async function submitSummary({ form, endpoint, payload, requestBody, perform, re
   try {
     let data;
     try {
-      data = perform ? await perform() : await parseApiResponse(await fetch(endpoint, {
+      data = perform ? await perform(summaryMode) : await parseApiResponse(await fetch(endpoint, {
         method: "POST",
         ...(requestBody
-          ? { body: requestBody }
-          : { headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) })
+          ? { headers: requestHeaders(summaryMode, false), body: requestBody }
+          : { headers: requestHeaders(summaryMode), body: JSON.stringify({ ...payload, summaryMode }) })
       }));
     } catch (error) {
       if (!recover) throw error;
-      data = await recover(error);
+      data = await recover(error, summaryMode);
     }
     elements.status.hidden = true;
     renderDigest(data);
@@ -397,6 +515,7 @@ async function submitSummary({ form, endpoint, payload, requestBody, perform, re
     setFeedback("error", error.message || "处理失败，请稍后重试。");
   } finally {
     button.disabled = false;
+    elements.summaryModes.forEach((input) => { input.disabled = false; });
     label.textContent = idleLabel;
   }
 }
@@ -406,8 +525,8 @@ $("#youtube-form").addEventListener("submit", (event) => {
   const url = elements.url.value.trim();
   submitSummary({
     form: event.currentTarget,
-    perform: () => postYoutubeSummary(url),
-    recover: (error) => recoverYoutubeWithBrowser(error, url)
+    perform: (summaryMode) => postYoutubeSummary(url, summaryMode),
+    recover: (error, summaryMode) => recoverYoutubeWithBrowser(error, url, summaryMode)
   });
 });
 
@@ -431,7 +550,7 @@ $("#file-form").addEventListener("submit", (event) => {
   submitSummary({
     form: event.currentTarget,
     ...(extension === ".pdf"
-      ? { perform: () => summarizePdfLocally(selectedFile) }
+      ? { perform: (summaryMode) => summarizePdfLocally(selectedFile, summaryMode) }
       : { endpoint: "/api/summarize/file", requestBody: formData })
   });
 });

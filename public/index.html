@@ -18,7 +18,7 @@
       <div class="system-status" id="system-status">
         <span class="status-light" aria-hidden="true"></span>
         <span id="system-label">正在连接服务</span>
-        <span class="version-tag">v0.1</span>
+        <span class="version-tag">v1.0</span>
       </div>
     </header>
 
@@ -42,6 +42,24 @@
               <span class="mode-index">C</span>粘贴文本
             </button>
           </div>
+
+          <fieldset class="summary-depth">
+            <legend>摘要深度</legend>
+            <div class="depth-options">
+              <label>
+                <input type="radio" name="summary-mode" value="concise" />
+                <span><strong>简洁</strong><small>3 个重点</small></span>
+              </label>
+              <label>
+                <input type="radio" name="summary-mode" value="standard" checked />
+                <span><strong>标准</strong><small>平衡完整度</small></span>
+              </label>
+              <label>
+                <input type="radio" name="summary-mode" value="deep" />
+                <span><strong>深度</strong><small>最多 8 个重点</small></span>
+              </label>
+            </div>
+          </fieldset>
 
           <form id="youtube-form" class="input-panel active" role="tabpanel" aria-labelledby="youtube-tab">
             <div class="field-heading">
@@ -110,7 +128,24 @@
           <i aria-hidden="true"></i>
           <div><span>03</span><strong>提取信号</strong></div>
         </div>
-        <p class="privacy-note"><span aria-hidden="true">◆</span> 内容仅在内存中处理，不写入数据库或日志。</p>
+
+        <aside class="usage-notes" aria-labelledby="usage-notes-title">
+          <div class="usage-notes-heading">
+            <span aria-hidden="true">!</span>
+            <div>
+              <strong id="usage-notes-title">使用前须知</strong>
+              <small>INPUT LIMITS</small>
+            </div>
+          </div>
+          <ul class="limit-grid">
+            <li><span>YT</span><div><strong>YouTube</strong><small>最长 60 分钟</small></div></li>
+            <li><span>PDF</span><div><strong>PDF 文件</strong><small>最大 20 MB</small></div></li>
+            <li><span>DOC</span><div><strong>Word / TXT / MD</strong><small>最大 4 MB</small></div></li>
+            <li><span>TXT</span><div><strong>粘贴文本</strong><small>最多 150,000 字符 · 请求体约 2 MB</small></div></li>
+          </ul>
+          <p class="processing-note">公开视频需可正常访问；耗时受内容长度、字幕来源及摘要深度影响。</p>
+          <p class="privacy-note"><span aria-hidden="true">◆</span> 内容仅在内存中处理，不写入数据库或日志。</p>
+        </aside>
       </section>
 
       <section class="result-column" aria-labelledby="result-heading">
@@ -135,9 +170,9 @@
           </div>
           <p class="empty-code">AWAITING_SOURCE</p>
           <h3>摘要区域已就绪</h3>
-          <p>提交视频、文档或文本后，这里会生成一句话结论、核心内容、关键数据、相关实体、观点、风险和原文定位。</p>
+          <p>提交视频、文档或文本后，这里会生成可直接回到原文核验的重点、数据、决定、行动、风险和内容脉络。</p>
           <div class="output-map">
-            <span>结论</span><span>要点</span><span>实体</span><span>数据</span><span>观点</span><span>风险</span><span>定位</span>
+            <span>结论</span><span>重点 + 依据</span><span>数据</span><span>行动</span><span>风险</span><span>时间轴</span>
           </div>
         </div>
 

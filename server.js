@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 import Busboy from "busboy";
 import { extractVideoId, normalizeText, numberParagraphs, transcriptToTimedText } from "./lib/content.js";
 import { MAX_FILE_SIZE, parseUploadedFile, validateExtractedFileText } from "./lib/file.js";
-import { resolveProviderConfig, summarizeContent } from "./lib/summarize.js";
+import { normalizeSummaryMode, resolveProviderConfig, summarizeContent } from "./lib/summarize.js";
 import { resolveSupadataConfig } from "./lib/supadata.js";
 import { fetchYoutubeTranscriptAuto, fetchYoutubeTranscriptFromBrowser, getYoutubeNetworkStatus } from "./lib/youtube.js";
 
@@ -52,6 +52,14 @@ function codedError(message, code) {
   return error;
 }
 
+function summaryModeFrom(request, payload = {}) {
+  return normalizeSummaryMode(payload.summaryMode || request.headers["x-sift-summary-mode"]);
+}
+
+function readingMinutes(characters) {
+  return Math.max(1, Math.ceil(characters / 500));
+}
+
 function checkYoutubeRateLimit(request) {
   const ip = request.headers["x-forwarded-for"]?.split(",")[0]?.trim() || request.socket.remoteAddress || "unknown";
   const now = Date.now();
@@ -66,7 +74,7 @@ function checkYoutubeRateLimit(request) {
   if (youtubeRateBuckets.size > 5000) youtubeRateBuckets.clear();
 }
 
-async function summarizeYoutube(videoId, transcript) {
+async function summarizeYoutube(videoId, transcript, summaryMode) {
   if (!transcript.segments.length) throw new Error("该视频没有可用字幕或画面文字");
   const lastSegment = transcript.segments[transcript.segments.length - 1];
   if (lastSegment?.startMs > MAX_VIDEO_DURATION_MS) {
@@ -82,7 +90,8 @@ async function summarizeYoutube(videoId, transcript) {
     summary = await summarizeContent({
       text,
       title: transcript.title || `YouTube ${videoId}`,
-      sourceType: visualTranscript ? "YouTube 画面字幕" : "YouTube 字幕"
+      sourceType: visualTranscript ? "YouTube 画面字幕" : "YouTube 字幕",
+      summaryMode
     });
   } catch (error) {
     throw codedError(`模型摘要失败：${error.message}`, "SUMMARY_FAILED");
@@ -96,16 +105,19 @@ async function summarizeYoutube(videoId, transcript) {
       sourceType: "youtube",
       videoId,
       extractionMethod: transcript.extractionMethod,
-      characters: text.length
+      characters: text.length,
+      summaryMode,
+      sourceMinutes: Math.max(1, Math.ceil((lastSegment.startMs || 0) / 60_000))
     }
   };
 }
 
-async function summarizeFileContent({ filename, fileType, text }) {
+async function summarizeFileContent({ filename, fileType, text }, summaryMode) {
   const summary = await summarizeContent({
     text: numberParagraphs(text),
     title: filename,
-    sourceType: `${fileType} 文件`
+    sourceType: `${fileType} 文件`,
+    summaryMode
   });
   return {
     summary,
@@ -113,7 +125,9 @@ async function summarizeFileContent({ filename, fileType, text }) {
       title: filename,
       sourceType: "file",
       fileType,
-      characters: text.length
+      characters: text.length,
+      summaryMode,
+      readingMinutes: readingMinutes(text.length)
     }
   };
 }
@@ -179,19 +193,32 @@ createServer(async (request, response) => {
 
     if (request.method === "POST" && pathname === "/api/summarize/text") {
       const payload = await body(request);
+      const summaryMode = summaryModeFrom(request, payload);
       const text = normalizeText(payload.text || "");
       if (text.length < 80) return json(response, 400, { error: "内容太短，请至少输入 80 个字符" });
       if (text.length > 150_000) return json(response, 400, { error: "内容过长，请控制在 15 万字符以内" });
-      const summary = await summarizeContent({ text: numberParagraphs(text), title: payload.title, sourceType: "粘贴文本" });
+      const summary = await summarizeContent({
+        text: numberParagraphs(text),
+        title: payload.title,
+        sourceType: "粘贴文本",
+        summaryMode
+      });
       return json(response, 200, {
         summary,
-        meta: { title: payload.title?.trim() || "粘贴文本摘要", sourceType: "text", characters: text.length }
+        meta: {
+          title: payload.title?.trim() || "粘贴文本摘要",
+          sourceType: "text",
+          characters: text.length,
+          summaryMode,
+          readingMinutes: readingMinutes(text.length)
+        }
       });
     }
 
     if (request.method === "POST" && pathname === "/api/summarize/youtube") {
       checkYoutubeRateLimit(request);
       const payload = await body(request);
+      const summaryMode = summaryModeFrom(request, payload);
       const videoId = extractVideoId(payload.url || "");
       response.writeHead(200, {
         "Content-Type": "application/x-ndjson; charset=utf-8",
@@ -201,31 +228,34 @@ createServer(async (request, response) => {
       send({ stage: "captions" });
       const transcript = await fetchYoutubeTranscriptAuto(videoId, process.env, (stage) => send({ stage }));
       send({ stage: "summarizing" });
-      send({ result: await summarizeYoutube(videoId, transcript) });
+      send({ result: await summarizeYoutube(videoId, transcript, summaryMode) });
       return response.end();
     }
 
     if (request.method === "POST" && pathname === "/api/summarize/youtube-browser") {
       checkYoutubeRateLimit(request);
       const payload = await body(request, 4_000_000);
+      const summaryMode = summaryModeFrom(request, payload);
       const videoId = extractVideoId(payload.url || "");
       const transcript = await fetchYoutubeTranscriptFromBrowser(payload.source);
       if (transcript.videoId !== videoId) throw new Error("浏览器助手返回的视频与请求链接不一致");
-      return json(response, 200, await summarizeYoutube(videoId, transcript));
+      return json(response, 200, await summarizeYoutube(videoId, transcript, summaryMode));
     }
 
     if (request.method === "POST" && pathname === "/api/summarize/file-text") {
       const payload = await body(request);
+      const summaryMode = summaryModeFrom(request, payload);
       const parsed = validateExtractedFileText(payload);
-      return json(response, 200, await summarizeFileContent(parsed));
+      return json(response, 200, await summarizeFileContent(parsed, summaryMode));
     }
 
     if (request.method === "POST" && pathname === "/api/summarize/file") {
+      const summaryMode = summaryModeFrom(request);
       const upload = await uploadedFile(request);
       console.info(`[file] 上传完成: ${upload.buffer.length} bytes`);
       const parsed = await parseUploadedFile(upload);
       console.info(`[file] 解析完成: ${parsed.fileType}, ${parsed.text.length} 字符`);
-      const result = await summarizeFileContent(parsed);
+      const result = await summarizeFileContent(parsed, summaryMode);
       console.info("[file] 摘要完成");
       return json(response, 200, result);
     }
