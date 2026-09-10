@@ -6,9 +6,9 @@
 
 ## 操作演示
 
-[![点击观看 Sift 线上 YouTube 解析演示](docs/media/sift-youtube-poster.png)](docs/media/sift-youtube-demo.webm)
+[![点击观看 Sift 线上 YouTube 解析演示](docs/media/sift-youtube-poster.png)](docs/media/sift-youtube-demo.mp4)
 
-[▶ 观看 / 下载操作视频（约 31 秒，WebM，2.4 MB）](docs/media/sift-youtube-demo.webm) · [在线体验](https://sift-navy-six.vercel.app/)
+[▶ 观看 / 下载操作视频（约 31 秒，MP4，1.3 MB）](docs/media/sift-youtube-demo.mp4) · [在线体验](https://sift-navy-six.vercel.app/)
 
 粘贴 YouTube 链接 → 选择简洁摘要 → 真实云端解析 → 查看中文重点、依据和时间轴 → 导出 Markdown。
 

@@ -4,6 +4,8 @@
 
 ## 重新录制
 
+需先安装支持 `libx264` 的 FFmpeg 并加入 PATH，或设置 `FFMPEG_PATH` 为其可执行文件路径。脚本在提交线上请求前检查编码器，录制完成后自动转换为 H.264 MP4（yuv420p、faststart），原始 WebM 仅留在临时目录。
+
 ```sh
 npm install
 npx playwright install chromium
@@ -16,11 +18,11 @@ node scripts/record-demo.mjs
 
 输出：
 
-- `docs/media/sift-youtube-demo.webm`：完整操作录像。
+- `docs/media/sift-youtube-demo.mp4`：完整操作录像。
 - `docs/media/sift-youtube-poster.png`：结果页截图封面。
 - 临时目录：原始录像及导出的 `summary.md`，位置输出到终端，不提交到 Git。
 
-后续重录会更新视频和封面，提交前请检查内容与敏感信息。GitHub 客户端无法直接播放 WebM 时，可下载后用浏览器或播放器打开。
+后续重录会更新视频和封面，提交前请检查内容与敏感信息。GitHub 客户端无法直接播放 MP4 时，可下载后用浏览器或播放器打开。
 
 ## 本次验证（2026-09-10）
 
@@ -30,3 +32,4 @@ node scripts/record-demo.mjs
 - `npm test`：52 项通过；业务代码未修改。
 - 标准模式首次尝试失败：`keyPoints[4].evidence.quote` 超过 160 字的结构校验上限。随后简洁模式成功，正式视频仅包含该次成功流程；本次没有修复该模型输出问题。
 - 本机录制工具的单选控件点击和视频保存顺序已调整；成功原始录像直接保存，没有为了修复保存问题再次消耗线上额度。
+- 原始录像已转换为 H.264 MP4，保留原分辨率，完整解码检查通过；未再次调用线上解析服务。

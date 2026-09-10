@@ -7,6 +7,9 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { setTimeout as delay } from "node:timers/promises";
 import { chromium } from "playwright";
+import { checkEncoder, convertToMp4 } from "./video.mjs";
+
+checkEncoder();
 
 const site = "https://sift-navy-six.vercel.app/";
 const source = process.argv[2] || "https://www.youtube.com/watch?v=hwP7WQkmECE";
@@ -72,7 +75,7 @@ try {
 } finally {
   await context.close();
   try {
-    if (completed) await video.saveAs(path.join(output, "sift-youtube-demo.webm"));
+    if (completed) convertToMp4(await video.path(), path.join(output, "sift-youtube-demo.mp4"));
   } finally {
     await browser.close();
     console.log("Raw recording and export retained at " + scratch);
