@@ -4,6 +4,18 @@
 
 > 从海量内容中，留下真正重要的信息。
 
+## 操作演示
+
+[![点击观看 Sift 线上 YouTube 解析演示](docs/media/sift-youtube-poster.png)](docs/media/sift-youtube-demo.webm)
+
+[▶ 观看 / 下载操作视频（约 31 秒，WebM，2.4 MB）](docs/media/sift-youtube-demo.webm) · [在线体验](https://sift-navy-six.vercel.app/)
+
+粘贴 YouTube 链接 → 选择简洁摘要 → 真实云端解析 → 查看中文重点、依据和时间轴 → 导出 Markdown。
+
+视频直接录自线上网站，使用 [Git in 100 Seconds](https://www.youtube.com/watch?v=hwP7WQkmECE)，带中文步骤字幕、无配音，不使用模拟结果。处理速度取决于视频、网络和服务状态；重要信息请回到原视频核验。无法直接播放时，请下载后打开。
+
+重新录制方法及本次验证记录见 [录制说明](docs/RECORDING.md)。
+
 ## v1.0 能力
 
 - **YouTube**：支持普通视频、Shorts 和直播回放。配置 Supadata 后，线上优先读取公开字幕，无字幕时自动生成 AI 语音转写，访客无需安装扩展、无需本机访问 YouTube；未配置时保留 YouTube 直连解析，无字幕视频可用 DeepSeek Vision 识别画面硬字幕。
