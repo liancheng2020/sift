@@ -33,6 +33,7 @@ const sampleText = `过去一年，越来越多的软件团队开始把生成式
 
 let latestResult = null;
 let selectedFile = null;
+let analyzing = false;
 
 function setMode(name) {
   elements.tabs.forEach((tab) => {
@@ -75,7 +76,7 @@ function selectFile(file) {
   const submit = $("#file-form button[type='submit']");
   elements.fileSelection.hidden = !selectedFile;
   elements.fileDrop.classList.toggle("has-file", Boolean(selectedFile));
-  submit.disabled = !selectedFile;
+  submit.disabled = analyzing || !selectedFile;
   if (selectedFile) {
     elements.fileName.textContent = selectedFile.name;
     elements.fileSize.textContent = formatFileSize(selectedFile.size);
@@ -132,6 +133,8 @@ function renderEvidence(evidence, meta) {
   details.append(create("summary", "", `查看依据 · ${evidence.locator}`));
   const body = create("div", "evidence-body");
   body.append(create("blockquote", "", evidence.quote));
+  const excerpt = meta.sourceExcerpts?.find(item => item.locator === evidence.locator && item.quote === evidence.quote);
+  if (excerpt) body.append(create("p", "source-excerpt", excerpt.excerpt));
   const link = youtubeLink(meta, evidence.seconds);
   if (link) {
     const jump = create("a", "evidence-jump", "从该时间播放 ↗");
@@ -288,7 +291,8 @@ function renderDigest(data) {
     extractionLabel,
     modeLabels[meta.summaryMode],
     duration,
-    `${Number(meta.characters || 0).toLocaleString()} 字符`
+    `${Number(meta.characters || 0).toLocaleString()} 字符`,
+    meta.grounding && `${meta.grounding.verifiedQuotes} 条引文与原文定位匹配`
   ].filter(Boolean);
   $("#digest-meta").textContent = metaParts.join(" / ");
   elements.digestContent.replaceChildren();
@@ -298,6 +302,13 @@ function renderDigest(data) {
   signalTop.append(create("span", "", "ONE-LINE SIGNAL"), create("b", "", summary.overview.topic));
   conclusion.append(signalTop, create("p", "", summary.overview.oneLiner));
   elements.digestContent.append(conclusion);
+  if (meta.trace) {
+    const details = create("details", "workflow-trace");
+    details.append(create("summary", "", "处理记录"));
+    details.append(create("p", "", `${meta.trace.model} / ${meta.trace.promptVersion} / ${meta.trace.chunkCount} 块 / ${meta.trace.calls.length} 次调用 / ${(meta.trace.durationMs / 1000).toFixed(1)} 秒`));
+    details.append(create("p", "", `输入 / 输出 token：${meta.trace.inputTokens ?? "未返回"} / ${meta.trace.outputTokens ?? "未返回"}；引文匹配不等于结论语义已验证。`));
+    elements.digestContent.append(details);
+  }
 
   let sectionIndex = 1;
   const appendSection = (title, items, renderer) => {
@@ -424,7 +435,7 @@ function requestBrowserYoutubeSource(url) {
 
 const YOUTUBE_STAGE_MESSAGES = {
   captions: "正在读取视频字幕……",
-  transcribing: "未发现公开字幕，正在生成语音转写，长视频可能需要几分钟……",
+  transcribing: "未发现公开字幕，正在尝试语音转写；超时后可上传字幕文本……",
   summarizing: "正在生成结构化摘要……"
 };
 
@@ -481,11 +492,14 @@ async function recoverYoutubeWithBrowser(error, url, summaryMode) {
 }
 
 async function submitSummary({ form, endpoint, payload, requestBody, perform, recover }) {
+  if (analyzing) return;
+  analyzing = true;
   const button = form.querySelector("button[type='submit']");
   const label = button.querySelector(".button-label");
   const idleLabel = label.textContent;
   const summaryMode = selectedSummaryMode();
-  button.disabled = true;
+  const submitButtons = [...document.querySelectorAll("button[type='submit']")];
+  submitButtons.forEach(button => { button.disabled = true; });
   elements.summaryModes.forEach((input) => { input.disabled = true; });
   label.textContent = "正在分析内容";
   elements.empty.hidden = true;
@@ -514,7 +528,8 @@ async function submitSummary({ form, endpoint, payload, requestBody, perform, re
     elements.empty.hidden = false;
     setFeedback("error", error.message || "处理失败，请稍后重试。");
   } finally {
-    button.disabled = false;
+    analyzing = false;
+    submitButtons.forEach(button => { button.disabled = button.form.id === "file-form" && !selectedFile; });
     elements.summaryModes.forEach((input) => { input.disabled = false; });
     label.textContent = idleLabel;
   }
@@ -592,7 +607,7 @@ async function checkHealth() {
     const data = await response.json();
     elements.system.classList.add(data.modelConfigured ? "online" : "warning");
     const provider = data.provider === "deepseek" ? "DeepSeek" : "OpenAI";
-    elements.systemLabel.textContent = data.modelConfigured ? `${provider} 在线` : `等待 ${provider} API Key`;
+    elements.systemLabel.textContent = data.modelConfigured ? `${provider} 已配置` : `等待 ${provider} API Key`;
   } catch {
     elements.system.classList.add("offline");
     elements.systemLabel.textContent = "服务连接失败";

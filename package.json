@@ -7,10 +7,11 @@
   "scripts": {
     "dev": "node --watch server.js",
     "start": "node server.js",
-    "test": "node --test"
+    "test": "node --test",
+    "eval:model": "node scripts/evaluate.mjs"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=20.18.1"
   },
   "dependencies": {
     "busboy": "^1.6.0",

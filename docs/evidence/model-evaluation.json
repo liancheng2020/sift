@@ -1,0 +1,1039 @@
+{
+  "date": "2026-10-04T17:24:28.524Z",
+  "syntheticOnly": true,
+  "maxCalls": 10,
+  "calls": 9,
+  "cases": [
+    {
+      "id": "text",
+      "sourceType": "text",
+      "status": "passed",
+      "checks": {
+        "schema": true,
+        "quotesMatched": true,
+        "requiredFacts": true,
+        "originalLocator": true
+      },
+      "result": {
+        "summary": {
+          "overview": {
+            "oneLiner": "Sift Pilot 项目试点仅面向内部员工，预算12万元、覆盖30人，须在2026年11月15日前完成并由林青提交验收报告，未通过验收前不得公开上线或计入正式业务收入。",
+            "topic": "Sift Pilot 内部试点评测"
+          },
+          "keyPoints": [
+            {
+              "title": "试点范围与规模",
+              "summary": "Sift Pilot 项目试点仅面向内部员工，覆盖30人，预算为12万元。",
+              "evidence": {
+                "locator": "[段落 1]",
+                "seconds": null,
+                "quote": "Sift Pilot 项目试点仅面向内部员工。预算为 12 万元，试点覆盖 30 人"
+              }
+            },
+            {
+              "title": "时间与负责人",
+              "summary": "试点计划在2026年11月15日前完成，项目负责人林青负责提交验收报告。",
+              "evidence": {
+                "locator": "[段落 1]",
+                "seconds": null,
+                "quote": "计划在 2026 年 11 月 15 日前完成。项目负责人林青负责提交验收报告。"
+              }
+            },
+            {
+              "title": "数据与上线限制",
+              "summary": "当前数据来自人工录入，存在数据遗漏风险；未通过验收前不得公开上线，也不得将试点收益视为正式业务收入。",
+              "evidence": {
+                "locator": "[段落 1]",
+                "seconds": null,
+                "quote": "当前数据来自人工录入，存在数据遗漏风险。未通过验收前，不得公开上线，也不得将试点收益视为正式业务收入。"
+              }
+            }
+          ],
+          "keyData": [
+            {
+              "label": "试点预算",
+              "value": "12 万元",
+              "context": "Sift Pilot 项目试点的预算金额",
+              "evidence": {
+                "locator": "[段落 1]",
+                "seconds": null,
+                "quote": "预算为 12 万元"
+              }
+            },
+            {
+              "label": "试点人数",
+              "value": "30 人",
+              "context": "试点覆盖的内部员工人数",
+              "evidence": {
+                "locator": "[段落 1]",
+                "seconds": null,
+                "quote": "试点覆盖 30 人"
+              }
+            },
+            {
+              "label": "完成期限",
+              "value": "2026 年 11 月 15 日",
+              "context": "试点计划完成的截止日期",
+              "evidence": {
+                "locator": "[段落 1]",
+                "seconds": null,
+                "quote": "计划在 2026 年 11 月 15 日前完成"
+              }
+            }
+          ],
+          "decisions": [
+            {
+              "statement": "试点仅面向内部员工，未通过验收前不得公开上线，也不得将试点收益视为正式业务收入。",
+              "evidence": {
+                "locator": "[段落 1]",
+                "seconds": null,
+                "quote": "未通过验收前，不得公开上线，也不得将试点收益视为正式业务收入。"
+              }
+            }
+          ],
+          "actionItems": [
+            {
+              "task": "提交验收报告",
+              "owner": "林青",
+              "deadline": null,
+              "evidence": {
+                "locator": "[段落 1]",
+                "seconds": null,
+                "quote": "项目负责人林青负责提交验收报告。"
+              }
+            }
+          ],
+          "risks": [
+            {
+              "description": "当前数据来自人工录入，存在数据遗漏风险。",
+              "evidence": {
+                "locator": "[段落 1]",
+                "seconds": null,
+                "quote": "当前数据来自人工录入，存在数据遗漏风险。"
+              }
+            }
+          ],
+          "outline": [
+            {
+              "title": "试点基本情况与限制",
+              "summary": "Sift Pilot 试点仅面向内部员工，预算12万元、覆盖30人，计划2026年11月15日前完成，由林青提交验收报告；数据来自人工录入存在遗漏风险，未通过验收前不得公开上线或计入正式业务收入。",
+              "locator": "[段落 1]",
+              "seconds": null
+            }
+          ]
+        },
+        "trace": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "promptVersion": "grounded-digest-2",
+          "chunkCount": 1,
+          "calls": [
+            {
+              "stage": "extract-1",
+              "attempt": 1,
+              "durationMs": 3487,
+              "inputTokens": 1442,
+              "outputTokens": 733,
+              "status": "failed",
+              "errorCode": "SUMMARY_INVALID_OUTPUT"
+            },
+            {
+              "stage": "extract-1",
+              "attempt": 2,
+              "durationMs": 2545,
+              "inputTokens": 2212,
+              "outputTokens": 721,
+              "status": "passed"
+            }
+          ],
+          "durationMs": 6032,
+          "cost": null,
+          "inputTokens": 3654,
+          "outputTokens": 1454
+        },
+        "grounding": {
+          "verifiedQuotes": 9,
+          "totalQuotes": 9,
+          "semanticVerified": false
+        },
+        "sourceExcerpts": [
+          {
+            "locator": "[段落 1]",
+            "quote": "Sift Pilot 项目试点仅面向内部员工。预算为 12 万元，试点覆盖 30 人",
+            "excerpt": "Sift Pilot 项目试点仅面向内部员工。预算为 12 万元，试点覆盖 30 人，计划在 2026 年 11 月 15 日前完成。项目负责人林青负责提交验收报告。当前数据来自人工录入，存在数据遗漏风险。未通过验收前，不得公开上线，也不得将试点收益视为正式业务收入。"
+          },
+          {
+            "locator": "[段落 1]",
+            "quote": "计划在 2026 年 11 月 15 日前完成。项目负责人林青负责提交验收报告。",
+            "excerpt": "Sift Pilot 项目试点仅面向内部员工。预算为 12 万元，试点覆盖 30 人，计划在 2026 年 11 月 15 日前完成。项目负责人林青负责提交验收报告。当前数据来自人工录入，存在数据遗漏风险。未通过验收前，不得公开上线，也不得将试点收益视为正式业务收入。"
+          },
+          {
+            "locator": "[段落 1]",
+            "quote": "当前数据来自人工录入，存在数据遗漏风险。未通过验收前，不得公开上线，也不得将试点收益视为正式业务收入。",
+            "excerpt": "Sift Pilot 项目试点仅面向内部员工。预算为 12 万元，试点覆盖 30 人，计划在 2026 年 11 月 15 日前完成。项目负责人林青负责提交验收报告。当前数据来自人工录入，存在数据遗漏风险。未通过验收前，不得公开上线，也不得将试点收益视为正式业务收入。"
+          },
+          {
+            "locator": "[段落 1]",
+            "quote": "预算为 12 万元",
+            "excerpt": "Sift Pilot 项目试点仅面向内部员工。预算为 12 万元，试点覆盖 30 人，计划在 2026 年 11 月 15 日前完成。项目负责人林青负责提交验收报告。当前数据来自人工录入，存在数据遗漏风险。未通过验收前，不得公开上线，也不得将试点收益视为正式业务收入。"
+          },
+          {
+            "locator": "[段落 1]",
+            "quote": "试点覆盖 30 人",
+            "excerpt": "Sift Pilot 项目试点仅面向内部员工。预算为 12 万元，试点覆盖 30 人，计划在 2026 年 11 月 15 日前完成。项目负责人林青负责提交验收报告。当前数据来自人工录入，存在数据遗漏风险。未通过验收前，不得公开上线，也不得将试点收益视为正式业务收入。"
+          },
+          {
+            "locator": "[段落 1]",
+            "quote": "计划在 2026 年 11 月 15 日前完成",
+            "excerpt": "Sift Pilot 项目试点仅面向内部员工。预算为 12 万元，试点覆盖 30 人，计划在 2026 年 11 月 15 日前完成。项目负责人林青负责提交验收报告。当前数据来自人工录入，存在数据遗漏风险。未通过验收前，不得公开上线，也不得将试点收益视为正式业务收入。"
+          },
+          {
+            "locator": "[段落 1]",
+            "quote": "未通过验收前，不得公开上线，也不得将试点收益视为正式业务收入。",
+            "excerpt": "t Pilot 项目试点仅面向内部员工。预算为 12 万元，试点覆盖 30 人，计划在 2026 年 11 月 15 日前完成。项目负责人林青负责提交验收报告。当前数据来自人工录入，存在数据遗漏风险。未通过验收前，不得公开上线，也不得将试点收益视为正式业务收入。"
+          },
+          {
+            "locator": "[段落 1]",
+            "quote": "项目负责人林青负责提交验收报告。",
+            "excerpt": "Sift Pilot 项目试点仅面向内部员工。预算为 12 万元，试点覆盖 30 人，计划在 2026 年 11 月 15 日前完成。项目负责人林青负责提交验收报告。当前数据来自人工录入，存在数据遗漏风险。未通过验收前，不得公开上线，也不得将试点收益视为正式业务收入。"
+          },
+          {
+            "locator": "[段落 1]",
+            "quote": "当前数据来自人工录入，存在数据遗漏风险。",
+            "excerpt": "Sift Pilot 项目试点仅面向内部员工。预算为 12 万元，试点覆盖 30 人，计划在 2026 年 11 月 15 日前完成。项目负责人林青负责提交验收报告。当前数据来自人工录入，存在数据遗漏风险。未通过验收前，不得公开上线，也不得将试点收益视为正式业务收入。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "pdf-pages",
+      "sourceType": "PDF",
+      "status": "passed",
+      "checks": {
+        "schema": true,
+        "quotesMatched": true,
+        "requiredFacts": true,
+        "originalLocator": true
+      },
+      "result": {
+        "summary": {
+          "overview": {
+            "oneLiner": "内部试点预算为12万元人民币、覆盖30名员工，验收尚未完成，且报告须在2026年11月15日前提交。",
+            "topic": "合成试点评测"
+          },
+          "keyPoints": [
+            {
+              "title": "试点预算与规模",
+              "summary": "内部试点预算为120000元人民币，覆盖30名员工，验收状态为待定。",
+              "evidence": {
+                "locator": "[第 1 页]",
+                "seconds": null,
+                "quote": "Internal pilot budget is 120000 CNY and includes 30 employees. Acceptance is pending."
+              }
+            },
+            {
+              "title": "报告提交期限",
+              "summary": "Lin Qing 必须在2026年11月15日前提交报告。",
+              "evidence": {
+                "locator": "[第 2 页]",
+                "seconds": null,
+                "quote": "Lin Qing must submit the report by November 15, 2026."
+              }
+            },
+            {
+              "title": "验收前不得发布",
+              "summary": "数据缺失构成风险，验收完成前不得发布。",
+              "evidence": {
+                "locator": "[第 2 页]",
+                "seconds": null,
+                "quote": "Missing data is a risk. Do not release before acceptance."
+              }
+            }
+          ],
+          "keyData": [
+            {
+              "label": "内部试点预算",
+              "value": "120000 CNY",
+              "context": "内部试点预算金额",
+              "evidence": {
+                "locator": "[第 1 页]",
+                "seconds": null,
+                "quote": "Internal pilot budget is 120000 CNY and includes 30 employees."
+              }
+            },
+            {
+              "label": "试点员工人数",
+              "value": "30 名员工",
+              "context": "内部试点覆盖的员工数量",
+              "evidence": {
+                "locator": "[第 1 页]",
+                "seconds": null,
+                "quote": "Internal pilot budget is 120000 CNY and includes 30 employees."
+              }
+            },
+            {
+              "label": "报告提交截止日期",
+              "value": "2026年11月15日",
+              "context": "Lin Qing 提交报告的期限",
+              "evidence": {
+                "locator": "[第 2 页]",
+                "seconds": null,
+                "quote": "Lin Qing must submit the report by November 15, 2026."
+              }
+            }
+          ],
+          "decisions": [],
+          "actionItems": [
+            {
+              "task": "提交报告",
+              "owner": "Lin Qing",
+              "deadline": "2026年11月15日",
+              "evidence": {
+                "locator": "[第 2 页]",
+                "seconds": null,
+                "quote": "Lin Qing must submit the report by November 15, 2026."
+              }
+            }
+          ],
+          "risks": [
+            {
+              "description": "数据缺失构成风险。",
+              "evidence": {
+                "locator": "[第 2 页]",
+                "seconds": null,
+                "quote": "Missing data is a risk."
+              }
+            },
+            {
+              "description": "验收尚未完成，验收前不得发布。",
+              "evidence": {
+                "locator": "[第 2 页]",
+                "seconds": null,
+                "quote": "Do not release before acceptance."
+              }
+            }
+          ],
+          "outline": [
+            {
+              "title": "试点预算与验收状态",
+              "summary": "内部试点预算为120000元人民币，覆盖30名员工，验收待定。",
+              "locator": "[第 1 页]",
+              "seconds": null
+            },
+            {
+              "title": "报告期限与发布限制",
+              "summary": "Lin Qing 须在2026年11月15日前提交报告；数据缺失是风险，验收前不得发布。",
+              "locator": "[第 2 页]",
+              "seconds": null
+            }
+          ]
+        },
+        "trace": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "promptVersion": "grounded-digest-2",
+          "chunkCount": 1,
+          "calls": [
+            {
+              "stage": "extract-1",
+              "attempt": 1,
+              "durationMs": 2358,
+              "inputTokens": 1415,
+              "outputTokens": 652,
+              "status": "passed"
+            }
+          ],
+          "durationMs": 2358,
+          "cost": null,
+          "inputTokens": 1415,
+          "outputTokens": 652
+        },
+        "grounding": {
+          "verifiedQuotes": 9,
+          "totalQuotes": 9,
+          "semanticVerified": false
+        },
+        "sourceExcerpts": [
+          {
+            "locator": "[第 1 页]",
+            "quote": "Internal pilot budget is 120000 CNY and includes 30 employees. Acceptance is pending.",
+            "excerpt": "Internal pilot budget is 120000 CNY and includes 30 employees. Acceptance is pending."
+          },
+          {
+            "locator": "[第 2 页]",
+            "quote": "Lin Qing must submit the report by November 15, 2026.",
+            "excerpt": "Lin Qing must submit the report by November 15, 2026. Missing data is a risk. Do not release before acceptance."
+          },
+          {
+            "locator": "[第 2 页]",
+            "quote": "Missing data is a risk. Do not release before acceptance.",
+            "excerpt": "Lin Qing must submit the report by November 15, 2026. Missing data is a risk. Do not release before acceptance."
+          },
+          {
+            "locator": "[第 1 页]",
+            "quote": "Internal pilot budget is 120000 CNY and includes 30 employees.",
+            "excerpt": "Internal pilot budget is 120000 CNY and includes 30 employees. Acceptance is pending."
+          },
+          {
+            "locator": "[第 2 页]",
+            "quote": "Missing data is a risk.",
+            "excerpt": "Lin Qing must submit the report by November 15, 2026. Missing data is a risk. Do not release before acceptance."
+          },
+          {
+            "locator": "[第 2 页]",
+            "quote": "Do not release before acceptance.",
+            "excerpt": "Lin Qing must submit the report by November 15, 2026. Missing data is a risk. Do not release before acceptance."
+          }
+        ]
+      }
+    },
+    {
+      "id": "word",
+      "sourceType": "DOCX",
+      "status": "passed",
+      "checks": {
+        "schema": true,
+        "quotesMatched": true,
+        "requiredFacts": true,
+        "originalLocator": true
+      },
+      "result": {
+        "summary": {
+          "overview": {
+            "oneLiner": "Sift Pilot 项目试点仅面向内部员工，预算12万元、覆盖30人，须在2026年11月15日前完成并由林青提交验收报告，未通过验收前不得公开上线或计入正式业务收入。",
+            "topic": "Sift Pilot 内部试点"
+          },
+          "keyPoints": [
+            {
+              "title": "试点范围与规模",
+              "summary": "试点仅面向内部员工，预算12万元，覆盖30人。",
+              "evidence": {
+                "locator": "[段落 1]",
+                "seconds": null,
+                "quote": "Sift Pilot 项目试点仅面向内部员工。预算为 12 万元，试点覆盖 30 人"
+              }
+            },
+            {
+              "title": "时间与负责人",
+              "summary": "计划在2026年11月15日前完成，项目负责人林青负责提交验收报告。",
+              "evidence": {
+                "locator": "[段落 1]",
+                "seconds": null,
+                "quote": "计划在 2026 年 11 月 15 日前完成。项目负责人林青负责提交验收报告。"
+              }
+            },
+            {
+              "title": "验收前限制",
+              "summary": "未通过验收前不得公开上线，也不得将试点收益视为正式业务收入。",
+              "evidence": {
+                "locator": "[段落 1]",
+                "seconds": null,
+                "quote": "未通过验收前，不得公开上线，也不得将试点收益视为正式业务收入。"
+              }
+            }
+          ],
+          "keyData": [
+            {
+              "label": "试点预算",
+              "value": "12 万元",
+              "context": "Sift Pilot 项目试点的预算金额",
+              "evidence": {
+                "locator": "[段落 1]",
+                "seconds": null,
+                "quote": "预算为 12 万元"
+              }
+            },
+            {
+              "label": "试点人数",
+              "value": "30 人",
+              "context": "试点覆盖的内部员工人数",
+              "evidence": {
+                "locator": "[段落 1]",
+                "seconds": null,
+                "quote": "试点覆盖 30 人"
+              }
+            },
+            {
+              "label": "完成期限",
+              "value": "2026 年 11 月 15 日",
+              "context": "试点计划完成的截止日期",
+              "evidence": {
+                "locator": "[段落 1]",
+                "seconds": null,
+                "quote": "计划在 2026 年 11 月 15 日前完成"
+              }
+            }
+          ],
+          "decisions": [
+            {
+              "statement": "试点仅面向内部员工。",
+              "evidence": {
+                "locator": "[段落 1]",
+                "seconds": null,
+                "quote": "Sift Pilot 项目试点仅面向内部员工。"
+              }
+            },
+            {
+              "statement": "未通过验收前不得公开上线，也不得将试点收益视为正式业务收入。",
+              "evidence": {
+                "locator": "[段落 1]",
+                "seconds": null,
+                "quote": "未通过验收前，不得公开上线，也不得将试点收益视为正式业务收入。"
+              }
+            }
+          ],
+          "actionItems": [
+            {
+              "task": "提交验收报告",
+              "owner": "林青",
+              "deadline": null,
+              "evidence": {
+                "locator": "[段落 1]",
+                "seconds": null,
+                "quote": "项目负责人林青负责提交验收报告。"
+              }
+            }
+          ],
+          "risks": [
+            {
+              "description": "当前数据来自人工录入，存在数据遗漏风险。",
+              "evidence": {
+                "locator": "[段落 1]",
+                "seconds": null,
+                "quote": "当前数据来自人工录入，存在数据遗漏风险。"
+              }
+            }
+          ],
+          "outline": [
+            {
+              "title": "试点基本安排与限制",
+              "summary": "Sift Pilot 试点仅面向内部员工，预算12万元、覆盖30人，计划2026年11月15日前完成，由林青提交验收报告；数据来自人工录入存在遗漏风险，未通过验收前不得公开上线或计入正式业务收入。",
+              "locator": "[段落 1]",
+              "seconds": null
+            }
+          ]
+        },
+        "trace": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "promptVersion": "grounded-digest-2",
+          "chunkCount": 1,
+          "calls": [
+            {
+              "stage": "extract-1",
+              "attempt": 1,
+              "durationMs": 3136,
+              "inputTokens": 1443,
+              "outputTokens": 724,
+              "status": "passed"
+            }
+          ],
+          "durationMs": 3136,
+          "cost": null,
+          "inputTokens": 1443,
+          "outputTokens": 724
+        },
+        "grounding": {
+          "verifiedQuotes": 10,
+          "totalQuotes": 10,
+          "semanticVerified": false
+        },
+        "sourceExcerpts": [
+          {
+            "locator": "[段落 1]",
+            "quote": "Sift Pilot 项目试点仅面向内部员工。预算为 12 万元，试点覆盖 30 人",
+            "excerpt": "Sift Pilot 项目试点仅面向内部员工。预算为 12 万元，试点覆盖 30 人，计划在 2026 年 11 月 15 日前完成。项目负责人林青负责提交验收报告。当前数据来自人工录入，存在数据遗漏风险。未通过验收前，不得公开上线，也不得将试点收益视为正式业务收入。"
+          },
+          {
+            "locator": "[段落 1]",
+            "quote": "计划在 2026 年 11 月 15 日前完成。项目负责人林青负责提交验收报告。",
+            "excerpt": "Sift Pilot 项目试点仅面向内部员工。预算为 12 万元，试点覆盖 30 人，计划在 2026 年 11 月 15 日前完成。项目负责人林青负责提交验收报告。当前数据来自人工录入，存在数据遗漏风险。未通过验收前，不得公开上线，也不得将试点收益视为正式业务收入。"
+          },
+          {
+            "locator": "[段落 1]",
+            "quote": "未通过验收前，不得公开上线，也不得将试点收益视为正式业务收入。",
+            "excerpt": "t Pilot 项目试点仅面向内部员工。预算为 12 万元，试点覆盖 30 人，计划在 2026 年 11 月 15 日前完成。项目负责人林青负责提交验收报告。当前数据来自人工录入，存在数据遗漏风险。未通过验收前，不得公开上线，也不得将试点收益视为正式业务收入。"
+          },
+          {
+            "locator": "[段落 1]",
+            "quote": "预算为 12 万元",
+            "excerpt": "Sift Pilot 项目试点仅面向内部员工。预算为 12 万元，试点覆盖 30 人，计划在 2026 年 11 月 15 日前完成。项目负责人林青负责提交验收报告。当前数据来自人工录入，存在数据遗漏风险。未通过验收前，不得公开上线，也不得将试点收益视为正式业务收入。"
+          },
+          {
+            "locator": "[段落 1]",
+            "quote": "试点覆盖 30 人",
+            "excerpt": "Sift Pilot 项目试点仅面向内部员工。预算为 12 万元，试点覆盖 30 人，计划在 2026 年 11 月 15 日前完成。项目负责人林青负责提交验收报告。当前数据来自人工录入，存在数据遗漏风险。未通过验收前，不得公开上线，也不得将试点收益视为正式业务收入。"
+          },
+          {
+            "locator": "[段落 1]",
+            "quote": "计划在 2026 年 11 月 15 日前完成",
+            "excerpt": "Sift Pilot 项目试点仅面向内部员工。预算为 12 万元，试点覆盖 30 人，计划在 2026 年 11 月 15 日前完成。项目负责人林青负责提交验收报告。当前数据来自人工录入，存在数据遗漏风险。未通过验收前，不得公开上线，也不得将试点收益视为正式业务收入。"
+          },
+          {
+            "locator": "[段落 1]",
+            "quote": "Sift Pilot 项目试点仅面向内部员工。",
+            "excerpt": "Sift Pilot 项目试点仅面向内部员工。预算为 12 万元，试点覆盖 30 人，计划在 2026 年 11 月 15 日前完成。项目负责人林青负责提交验收报告。当前数据来自人工录入，存在数据遗漏风险。未通过验收前，不得公开上线，也不得将试点收益视为正式业务收入。"
+          },
+          {
+            "locator": "[段落 1]",
+            "quote": "项目负责人林青负责提交验收报告。",
+            "excerpt": "Sift Pilot 项目试点仅面向内部员工。预算为 12 万元，试点覆盖 30 人，计划在 2026 年 11 月 15 日前完成。项目负责人林青负责提交验收报告。当前数据来自人工录入，存在数据遗漏风险。未通过验收前，不得公开上线，也不得将试点收益视为正式业务收入。"
+          },
+          {
+            "locator": "[段落 1]",
+            "quote": "当前数据来自人工录入，存在数据遗漏风险。",
+            "excerpt": "Sift Pilot 项目试点仅面向内部员工。预算为 12 万元，试点覆盖 30 人，计划在 2026 年 11 月 15 日前完成。项目负责人林青负责提交验收报告。当前数据来自人工录入，存在数据遗漏风险。未通过验收前，不得公开上线，也不得将试点收益视为正式业务收入。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "timed-subtitles",
+      "sourceType": "YouTube 字幕",
+      "status": "passed",
+      "checks": {
+        "schema": true,
+        "quotesMatched": true,
+        "requiredFacts": true,
+        "originalLocator": true
+      },
+      "result": {
+        "summary": {
+          "overview": {
+            "oneLiner": "Sift Pilot 项目试点仅面向内部员工，预算12万元、覆盖30人，须在2026年11月15日前完成并由林青提交验收报告，验收前不得公开上线或计入正式收入。",
+            "topic": "Sift Pilot 内部试点"
+          },
+          "keyPoints": [
+            {
+              "title": "试点范围与预算",
+              "summary": "Sift Pilot 项目试点仅面向内部员工，预算为12万元，覆盖30人。",
+              "evidence": {
+                "locator": "[00:00]",
+                "seconds": 0,
+                "quote": "Sift Pilot 项目试点仅面向内部员工。预算为 12 万元，试点覆盖 30 人"
+              }
+            },
+            {
+              "title": "完成期限与负责人",
+              "summary": "试点计划在2026年11月15日前完成，项目负责人林青负责提交验收报告。",
+              "evidence": {
+                "locator": "[00:00]",
+                "seconds": 0,
+                "quote": "计划在 2026 年 11 月 15 日前完成。项目负责人林青负责提交验收报告。"
+              }
+            },
+            {
+              "title": "验收前的限制",
+              "summary": "未通过验收前不得公开上线，也不得将试点收益视为正式业务收入；试点结论不可外推。",
+              "evidence": {
+                "locator": "[00:00]",
+                "seconds": 0,
+                "quote": "未通过验收前，不得公开上线，也不得将试点收益视为正式业务收入。"
+              }
+            }
+          ],
+          "keyData": [
+            {
+              "label": "试点预算",
+              "value": "12 万元",
+              "context": "Sift Pilot 项目试点的预算金额",
+              "evidence": {
+                "locator": "[00:00]",
+                "seconds": 0,
+                "quote": "预算为 12 万元"
+              }
+            },
+            {
+              "label": "试点人数",
+              "value": "30 人",
+              "context": "试点覆盖的内部员工人数",
+              "evidence": {
+                "locator": "[00:00]",
+                "seconds": 0,
+                "quote": "试点覆盖 30 人"
+              }
+            },
+            {
+              "label": "完成期限",
+              "value": "2026 年 11 月 15 日",
+              "context": "试点计划完成的截止日期",
+              "evidence": {
+                "locator": "[00:00]",
+                "seconds": 0,
+                "quote": "计划在 2026 年 11 月 15 日前完成"
+              }
+            }
+          ],
+          "decisions": [],
+          "actionItems": [
+            {
+              "task": "提交验收报告",
+              "owner": "林青",
+              "deadline": null,
+              "evidence": {
+                "locator": "[00:00]",
+                "seconds": 0,
+                "quote": "项目负责人林青负责提交验收报告。"
+              }
+            }
+          ],
+          "risks": [
+            {
+              "description": "当前数据来自人工录入，存在数据遗漏风险。",
+              "evidence": {
+                "locator": "[00:00]",
+                "seconds": 0,
+                "quote": "当前数据来自人工录入，存在数据遗漏风险。"
+              }
+            },
+            {
+              "description": "试点结论不可外推，需待验收后再考虑公开。",
+              "evidence": {
+                "locator": "[01:20]",
+                "seconds": 80,
+                "quote": "试点结论不可外推，待验收后再考虑公开。"
+              }
+            }
+          ],
+          "outline": [
+            {
+              "title": "试点安排与限制",
+              "summary": "介绍试点范围、预算、人数、期限、负责人，以及验收前的上线与收入确认限制和数据遗漏风险。",
+              "locator": "[00:00]",
+              "seconds": 0
+            },
+            {
+              "title": "结论外推提醒",
+              "summary": "再次提醒试点结论不可外推，待验收后再考虑公开。",
+              "locator": "[01:20]",
+              "seconds": 80
+            }
+          ]
+        },
+        "trace": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "promptVersion": "grounded-digest-2",
+          "chunkCount": 1,
+          "calls": [
+            {
+              "stage": "extract-1",
+              "attempt": 1,
+              "durationMs": 2502,
+              "inputTokens": 1466,
+              "outputTokens": 689,
+              "status": "passed"
+            }
+          ],
+          "durationMs": 2503,
+          "cost": null,
+          "inputTokens": 1466,
+          "outputTokens": 689
+        },
+        "grounding": {
+          "verifiedQuotes": 9,
+          "totalQuotes": 9,
+          "semanticVerified": false
+        },
+        "sourceExcerpts": [
+          {
+            "locator": "[00:00]",
+            "quote": "Sift Pilot 项目试点仅面向内部员工。预算为 12 万元，试点覆盖 30 人",
+            "excerpt": "Sift Pilot 项目试点仅面向内部员工。预算为 12 万元，试点覆盖 30 人，计划在 2026 年 11 月 15 日前完成。项目负责人林青负责提交验收报告。当前数据来自人工录入，存在数据遗漏风险。未通过验收前，不得公开上线，也不得将试点收益视为正式业务收入。"
+          },
+          {
+            "locator": "[00:00]",
+            "quote": "计划在 2026 年 11 月 15 日前完成。项目负责人林青负责提交验收报告。",
+            "excerpt": "Sift Pilot 项目试点仅面向内部员工。预算为 12 万元，试点覆盖 30 人，计划在 2026 年 11 月 15 日前完成。项目负责人林青负责提交验收报告。当前数据来自人工录入，存在数据遗漏风险。未通过验收前，不得公开上线，也不得将试点收益视为正式业务收入。"
+          },
+          {
+            "locator": "[00:00]",
+            "quote": "未通过验收前，不得公开上线，也不得将试点收益视为正式业务收入。",
+            "excerpt": "t Pilot 项目试点仅面向内部员工。预算为 12 万元，试点覆盖 30 人，计划在 2026 年 11 月 15 日前完成。项目负责人林青负责提交验收报告。当前数据来自人工录入，存在数据遗漏风险。未通过验收前，不得公开上线，也不得将试点收益视为正式业务收入。"
+          },
+          {
+            "locator": "[00:00]",
+            "quote": "预算为 12 万元",
+            "excerpt": "Sift Pilot 项目试点仅面向内部员工。预算为 12 万元，试点覆盖 30 人，计划在 2026 年 11 月 15 日前完成。项目负责人林青负责提交验收报告。当前数据来自人工录入，存在数据遗漏风险。未通过验收前，不得公开上线，也不得将试点收益视为正式业务收入。"
+          },
+          {
+            "locator": "[00:00]",
+            "quote": "试点覆盖 30 人",
+            "excerpt": "Sift Pilot 项目试点仅面向内部员工。预算为 12 万元，试点覆盖 30 人，计划在 2026 年 11 月 15 日前完成。项目负责人林青负责提交验收报告。当前数据来自人工录入，存在数据遗漏风险。未通过验收前，不得公开上线，也不得将试点收益视为正式业务收入。"
+          },
+          {
+            "locator": "[00:00]",
+            "quote": "计划在 2026 年 11 月 15 日前完成",
+            "excerpt": "Sift Pilot 项目试点仅面向内部员工。预算为 12 万元，试点覆盖 30 人，计划在 2026 年 11 月 15 日前完成。项目负责人林青负责提交验收报告。当前数据来自人工录入，存在数据遗漏风险。未通过验收前，不得公开上线，也不得将试点收益视为正式业务收入。"
+          },
+          {
+            "locator": "[00:00]",
+            "quote": "项目负责人林青负责提交验收报告。",
+            "excerpt": "Sift Pilot 项目试点仅面向内部员工。预算为 12 万元，试点覆盖 30 人，计划在 2026 年 11 月 15 日前完成。项目负责人林青负责提交验收报告。当前数据来自人工录入，存在数据遗漏风险。未通过验收前，不得公开上线，也不得将试点收益视为正式业务收入。"
+          },
+          {
+            "locator": "[00:00]",
+            "quote": "当前数据来自人工录入，存在数据遗漏风险。",
+            "excerpt": "Sift Pilot 项目试点仅面向内部员工。预算为 12 万元，试点覆盖 30 人，计划在 2026 年 11 月 15 日前完成。项目负责人林青负责提交验收报告。当前数据来自人工录入，存在数据遗漏风险。未通过验收前，不得公开上线，也不得将试点收益视为正式业务收入。"
+          },
+          {
+            "locator": "[01:20]",
+            "quote": "试点结论不可外推，待验收后再考虑公开。",
+            "excerpt": "本期再次提醒：试点结论不可外推，待验收后再考虑公开。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "long-map-reduce",
+      "sourceType": "text",
+      "status": "passed",
+      "checks": {
+        "schema": true,
+        "quotesMatched": true,
+        "requiredFacts": true,
+        "originalLocator": true
+      },
+      "result": {
+        "summary": {
+          "overview": {
+            "oneLiner": "Sift Pilot 内部试点预算12万元、覆盖30人，须在2026年11月15日前完成并由林青提交验收报告，最终核验显示验收仍未通过。",
+            "topic": "Sift Pilot内部试点"
+          },
+          "keyPoints": [
+            {
+              "title": "试点范围与规模",
+              "summary": "Sift Pilot 项目试点仅面向内部员工，覆盖30人，预算为12万元。",
+              "evidence": {
+                "locator": "[段落 1]",
+                "seconds": null,
+                "quote": "Sift Pilot 项目试点仅面向内部员工。预算为 12 万元，试点覆盖 30 人"
+              }
+            },
+            {
+              "title": "时间与负责人",
+              "summary": "试点计划在2026年11月15日前完成，项目负责人林青负责提交验收报告。",
+              "evidence": {
+                "locator": "[段落 1]",
+                "seconds": null,
+                "quote": "计划在 2026 年 11 月 15 日前完成。项目负责人林青负责提交验收报告。"
+              }
+            },
+            {
+              "title": "最终核验结果",
+              "summary": "项目最终核验结果为预算维持12万元，验收仍未通过。",
+              "evidence": {
+                "locator": "[段落 3]",
+                "seconds": null,
+                "quote": "项目最终核验结果：预算维持 12 万元，验收仍未通过。"
+              }
+            }
+          ],
+          "keyData": [
+            {
+              "label": "试点预算",
+              "value": "12 万元",
+              "context": "Sift Pilot 项目试点的预算金额",
+              "evidence": {
+                "locator": "[段落 1]",
+                "seconds": null,
+                "quote": "预算为 12 万元"
+              }
+            },
+            {
+              "label": "试点人数",
+              "value": "30 人",
+              "context": "试点覆盖的内部员工人数",
+              "evidence": {
+                "locator": "[段落 1]",
+                "seconds": null,
+                "quote": "试点覆盖 30 人"
+              }
+            },
+            {
+              "label": "完成期限",
+              "value": "2026 年 11 月 15 日",
+              "context": "试点计划完成的截止日期",
+              "evidence": {
+                "locator": "[段落 1]",
+                "seconds": null,
+                "quote": "计划在 2026 年 11 月 15 日前完成"
+              }
+            }
+          ],
+          "decisions": [
+            {
+              "statement": "试点仅面向内部员工。",
+              "evidence": {
+                "locator": "[段落 1]",
+                "seconds": null,
+                "quote": "Sift Pilot 项目试点仅面向内部员工。"
+              }
+            },
+            {
+              "statement": "未通过验收前不得公开上线，也不得将试点收益视为正式业务收入。",
+              "evidence": {
+                "locator": "[段落 1]",
+                "seconds": null,
+                "quote": "未通过验收前，不得公开上线，也不得将试点收益视为正式业务收入。"
+              }
+            }
+          ],
+          "actionItems": [
+            {
+              "task": "提交验收报告",
+              "owner": "林青",
+              "deadline": null,
+              "evidence": {
+                "locator": "[段落 1]",
+                "seconds": null,
+                "quote": "项目负责人林青负责提交验收报告。"
+              }
+            }
+          ],
+          "risks": [
+            {
+              "description": "当前数据来自人工录入，存在数据遗漏风险。",
+              "evidence": {
+                "locator": "[段落 1]",
+                "seconds": null,
+                "quote": "当前数据来自人工录入，存在数据遗漏风险。"
+              }
+            },
+            {
+              "description": "验收仍未通过。",
+              "evidence": {
+                "locator": "[段落 3]",
+                "seconds": null,
+                "quote": "项目最终核验结果：预算维持 12 万元，验收仍未通过。"
+              }
+            }
+          ],
+          "outline": [
+            {
+              "title": "试点安排与限制",
+              "summary": "Sift Pilot 试点仅面向内部员工，预算12万元、覆盖30人，计划2026年11月15日前完成，由林青提交验收报告；数据人工录入存在遗漏风险，未通过验收前不得公开上线或计入正式收入。",
+              "locator": "[段落 1]",
+              "seconds": null
+            },
+            {
+              "title": "内部试点背景说明",
+              "summary": "本块为内部试点的背景说明，强调以验收为准，不得扩展结论。",
+              "locator": "[段落 2]",
+              "seconds": null
+            },
+            {
+              "title": "最终核验结果",
+              "summary": "项目最终核验结果：预算维持12万元，验收仍未通过。",
+              "locator": "[段落 3]",
+              "seconds": null
+            }
+          ]
+        },
+        "trace": {
+          "provider": "deepseek",
+          "model": "deepseek-flash",
+          "promptVersion": "grounded-digest-2",
+          "chunkCount": 3,
+          "calls": [
+            {
+              "stage": "extract-1",
+              "attempt": 1,
+              "durationMs": 3836,
+              "inputTokens": 1442,
+              "outputTokens": 737,
+              "status": "passed"
+            },
+            {
+              "stage": "extract-2",
+              "attempt": 1,
+              "durationMs": 1388,
+              "inputTokens": 3012,
+              "outputTokens": 168,
+              "status": "passed"
+            },
+            {
+              "stage": "extract-3",
+              "attempt": 1,
+              "durationMs": 2212,
+              "inputTokens": 2435,
+              "outputTokens": 364,
+              "status": "passed"
+            },
+            {
+              "stage": "merge-0-1",
+              "attempt": 1,
+              "durationMs": 3189,
+              "inputTokens": 2624,
+              "outputTokens": 834,
+              "status": "passed"
+            }
+          ],
+          "durationMs": 10626,
+          "cost": null,
+          "inputTokens": 9513,
+          "outputTokens": 2103
+        },
+        "grounding": {
+          "verifiedQuotes": 11,
+          "totalQuotes": 11,
+          "semanticVerified": false
+        },
+        "sourceExcerpts": [
+          {
+            "locator": "[段落 1]",
+            "quote": "Sift Pilot 项目试点仅面向内部员工。预算为 12 万元，试点覆盖 30 人",
+            "excerpt": "Sift Pilot 项目试点仅面向内部员工。预算为 12 万元，试点覆盖 30 人，计划在 2026 年 11 月 15 日前完成。项目负责人林青负责提交验收报告。当前数据来自人工录入，存在数据遗漏风险。未通过验收前，不得公开上线，也不得将试点收益视为正式业务收入。"
+          },
+          {
+            "locator": "[段落 1]",
+            "quote": "计划在 2026 年 11 月 15 日前完成。项目负责人林青负责提交验收报告。",
+            "excerpt": "Sift Pilot 项目试点仅面向内部员工。预算为 12 万元，试点覆盖 30 人，计划在 2026 年 11 月 15 日前完成。项目负责人林青负责提交验收报告。当前数据来自人工录入，存在数据遗漏风险。未通过验收前，不得公开上线，也不得将试点收益视为正式业务收入。"
+          },
+          {
+            "locator": "[段落 3]",
+            "quote": "项目最终核验结果：预算维持 12 万元，验收仍未通过。",
+            "excerpt": "项目最终核验结果：预算维持 12 万元，验收仍未通过。"
+          },
+          {
+            "locator": "[段落 1]",
+            "quote": "预算为 12 万元",
+            "excerpt": "Sift Pilot 项目试点仅面向内部员工。预算为 12 万元，试点覆盖 30 人，计划在 2026 年 11 月 15 日前完成。项目负责人林青负责提交验收报告。当前数据来自人工录入，存在数据遗漏风险。未通过验收前，不得公开上线，也不得将试点收益视为正式业务收入。"
+          },
+          {
+            "locator": "[段落 1]",
+            "quote": "试点覆盖 30 人",
+            "excerpt": "Sift Pilot 项目试点仅面向内部员工。预算为 12 万元，试点覆盖 30 人，计划在 2026 年 11 月 15 日前完成。项目负责人林青负责提交验收报告。当前数据来自人工录入，存在数据遗漏风险。未通过验收前，不得公开上线，也不得将试点收益视为正式业务收入。"
+          },
+          {
+            "locator": "[段落 1]",
+            "quote": "计划在 2026 年 11 月 15 日前完成",
+            "excerpt": "Sift Pilot 项目试点仅面向内部员工。预算为 12 万元，试点覆盖 30 人，计划在 2026 年 11 月 15 日前完成。项目负责人林青负责提交验收报告。当前数据来自人工录入，存在数据遗漏风险。未通过验收前，不得公开上线，也不得将试点收益视为正式业务收入。"
+          },
+          {
+            "locator": "[段落 1]",
+            "quote": "Sift Pilot 项目试点仅面向内部员工。",
+            "excerpt": "Sift Pilot 项目试点仅面向内部员工。预算为 12 万元，试点覆盖 30 人，计划在 2026 年 11 月 15 日前完成。项目负责人林青负责提交验收报告。当前数据来自人工录入，存在数据遗漏风险。未通过验收前，不得公开上线，也不得将试点收益视为正式业务收入。"
+          },
+          {
+            "locator": "[段落 1]",
+            "quote": "未通过验收前，不得公开上线，也不得将试点收益视为正式业务收入。",
+            "excerpt": "t Pilot 项目试点仅面向内部员工。预算为 12 万元，试点覆盖 30 人，计划在 2026 年 11 月 15 日前完成。项目负责人林青负责提交验收报告。当前数据来自人工录入，存在数据遗漏风险。未通过验收前，不得公开上线，也不得将试点收益视为正式业务收入。"
+          },
+          {
+            "locator": "[段落 1]",
+            "quote": "项目负责人林青负责提交验收报告。",
+            "excerpt": "Sift Pilot 项目试点仅面向内部员工。预算为 12 万元，试点覆盖 30 人，计划在 2026 年 11 月 15 日前完成。项目负责人林青负责提交验收报告。当前数据来自人工录入，存在数据遗漏风险。未通过验收前，不得公开上线，也不得将试点收益视为正式业务收入。"
+          },
+          {
+            "locator": "[段落 1]",
+            "quote": "当前数据来自人工录入，存在数据遗漏风险。",
+            "excerpt": "Sift Pilot 项目试点仅面向内部员工。预算为 12 万元，试点覆盖 30 人，计划在 2026 年 11 月 15 日前完成。项目负责人林青负责提交验收报告。当前数据来自人工录入，存在数据遗漏风险。未通过验收前，不得公开上线，也不得将试点收益视为正式业务收入。"
+          }
+        ]
+      }
+    }
+  ],
+  "completed": true,
+  "passed": true
+}

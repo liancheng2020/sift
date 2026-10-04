@@ -62,7 +62,7 @@ test("resolveProviderConfig defaults to DeepSeek when its key exists", () => {
   assert.deepEqual(resolveProviderConfig({ DEEPSEEK_API_KEY: "test-key" }), {
     provider: "deepseek",
     apiKey: "test-key",
-    model: "deepseek-chat",
+    model: "deepseek-flash",
     endpoint: "https://api.deepseek.com/chat/completions"
   });
 });

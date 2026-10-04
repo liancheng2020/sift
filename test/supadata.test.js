@@ -13,6 +13,15 @@ const TEST_ENV = {
   SUPADATA_POLL_TIMEOUT_MS: "60"
 };
 
+test("Vercel transcription budget is capped below the function deadline", () => {
+  assert.equal(resolveSupadataConfig({ VERCEL: "1", SUPADATA_POLL_TIMEOUT_MS: "240000" }).pollTimeoutMs, 25000);
+});
+
+test("expired transcript budget never calls the provider", async () => {
+  clearSupadataTranscriptCache();
+  await assert.rejects(fetchSupadataTranscript("deadline123", TEST_ENV, () => {}, { deadline: Date.now() - 1 }), error => error.youtubeCode === "SUPADATA_TIMEOUT");
+});
+
 const jsonResponse = (status, data) => new Response(JSON.stringify(data), {
   status,
   headers: { "Content-Type": "application/json" }

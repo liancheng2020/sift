@@ -1340,6 +1340,27 @@ a.anchor-row:hover {
   }
 }
 
+.source-excerpt {
+  margin: 10px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--border, #29333e);
+  line-height: 1.7;
+  color: var(--muted, #95a3b3);
+  overflow-wrap: anywhere;
+}
+
+.workflow-trace {
+  margin: 16px 0 24px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border, #29333e);
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--muted, #95a3b3);
+  overflow-wrap: anywhere;
+}
+
+.workflow-trace summary { cursor: pointer; }
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
