@@ -31,6 +31,18 @@ async function withServer(t, summarize) {
 }
 const summary = () => ({ summary: fixtureDigest(), trace: { calls: [] }, grounding: { semanticVerified: false }, sourceExcerpts: [] });
 
+test("Vercel rewritten URLs preserve health and multipart upload routes", async t => {
+  const base = await withServer(t, async () => summary());
+  const health = await fetch(`${base}/server.js?_sift_path=/api/health`);
+  assert.equal(health.status, 200);
+  assert.equal((await health.json()).ok, true);
+  const form = new FormData();
+  form.append("file", new Blob([syntheticText]), "fixture.md");
+  const upload = await fetch(`${base}/server.js?_sift_path=/api/summarize/file`, { method: "POST", body: form });
+  assert.equal(upload.status, 200);
+  assert.equal((await upload.json()).meta.sourceType, "file");
+});
+
 test("text endpoint returns trace and forwards cancellation signal", async t => {
   const base = await withServer(t, async (input, options) => {
     assert.equal(input.text, syntheticText);

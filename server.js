@@ -178,7 +178,11 @@ export function createHandler({ summarize = summarizeContentDetailed } = {}) {
     const options = { signal: controller.signal };
     if (process.env.VERCEL || process.env.VERCEL_ENV) options.deadline = Date.now() + 50_000;
     try {
-      const pathname = request.url.split("?")[0];
+      const url = new URL(request.url, "http://localhost");
+      const routedPath = url.searchParams.get("_sift_path");
+      const pathname = url.pathname === "/server.js" && routedPath?.startsWith("/api/")
+        ? routedPath
+        : url.pathname;
       if (request.method === "POST" && pathname.startsWith("/api/summarize/")) checkSummaryRateLimit(request, rateBuckets);
       if (pathname === "/api/health") {
         const config = resolveProviderConfig();
