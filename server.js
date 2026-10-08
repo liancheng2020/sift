@@ -171,7 +171,7 @@ function uploadedFile(request) {
   });
 }
 
-createServer(async (request, response) => {
+export default async function handler(request, response) {
   try {
     const pathname = request.url.split("?")[0];
     if (pathname === "/api/health") {
@@ -297,4 +297,8 @@ createServer(async (request, response) => {
     }
     json(response, status, payload);
   }
-}).listen(port, () => console.log(`Sift running at http://localhost:${port}`));
+}
+
+if (!process.env.VERCEL) {
+  createServer(handler).listen(port, () => console.log(`Sift running at http://localhost:${port}`));
+}
